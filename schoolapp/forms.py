@@ -1,9 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.db import transaction
-
-from schoolapp.models import Admission, Program, User, School, Student, Level, SchoolClass, TakenCourse, Semester, \
-    PaymentStructure, Payment, Department, PaymentType
+from schoolapp.models import Admission, Program, User, School
 
 COUNTRIES = (
     ('Zambia', 'Zambia'),
@@ -255,18 +251,6 @@ APPLICATION_STATUS_CHOICES = (
     ('Rejected', "Rejected"),
 )
 
-USER_GROUPS = (
-    ("---------", "---------"),
-    ('Admissions Office', "Admissions Office"),
-    ('Accounts Office', "Accounts Office"),
-    ('Dean Of Students Affairs Office', "Dean Of Students Affairs Office"),
-    ('ICT Office', "ICT Office"),
-    ("Program Coordinator or Principal Lecturer Office", "Program Coordinator or Principal Lecturer Office"),
-    ('Registrar Office', "Registrar Office"),
-    ('Lecturer', "Lecturer"),
-    ('Other', "Other"),
-)
-
 
 class AddSchoolForm(forms.ModelForm):
     school_name = forms.CharField(
@@ -282,7 +266,7 @@ class AddSchoolForm(forms.ModelForm):
         label="School Name:",
     )
 
-    school_description = forms.CharField(
+    description_name = forms.CharField(
         max_length=200,
         required=True,
         widget=forms.TextInput(
@@ -314,13 +298,6 @@ class AddDepartmentForm(forms.ModelForm):
         label="Department Name:",
     )
 
-    hod = forms.ModelChoiceField(queryset=User.objects.filter(is_member_of_staff=True),
-                                       widget=forms.Select(
-                                           attrs={'class': 'form-control',}),
-                                       label='Head Of Department',
-                                       empty_label='--------------------',
-                                     )
-
     department_description = forms.CharField(
         max_length=200,
         required=True,
@@ -335,8 +312,8 @@ class AddDepartmentForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Department
-        fields = ['department_name', 'hod', 'department_description',]
+        model = School
+        fields = ['department_name', 'department_description',]
 
 
 class AddTeacherForm(forms.ModelForm):
@@ -344,6 +321,16 @@ class AddTeacherForm(forms.ModelForm):
         ("---------", "---------"),
         ('Male', "Male"),
         ('Female', "Female"),
+    )
+
+    USER_GROUPS = (
+        ('Admissions Office', "Admissions Office"),
+        ('Accounts Office', "Accounts Office"),
+        ('Dean Of Students Affairs Office', "Dean Of Students Affairs Office"),
+        ('ICT Office', "ICT Office"),
+        ("Program Coordinator or Principal Lecturer Office", "Program Coordinator or Principal Lecturer Office"),
+        ('Registrar Office', "Registrar Office"),
+        ('Complete', "Complete"),
     )
 
     first_name = forms.CharField(
@@ -443,129 +430,6 @@ class AddTeacherForm(forms.ModelForm):
         fields = ['username', 'first_name', 'last_name', 'is_member_of_staff', 'gender', 'user_group', 'phone', 'email']
 
 
-class AddStudentForm(forms.ModelForm):
-    GENDER = (
-        ("---------", "---------"),
-        ('Male', "Male"),
-        ('Female', "Female"),
-    )
-
-    first_name = forms.CharField(
-        max_length=200,
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'enter first name here',
-            }
-        ),
-        label="First Name:",
-    )
-
-    last_name = forms.CharField(
-        max_length=200,
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'enter last name here',
-            }
-        ),
-        label="Last Name:",
-    )
-
-    phone = forms.CharField(
-        max_length=200,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'enter phone number here',
-            }
-        ),
-        label="Phone Number",
-    )
-
-    email = forms.EmailField(
-        max_length=200,
-        required=True,
-        widget=forms.EmailInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'enter a valid email here',
-            }
-        ),
-        label="Email Address:",
-    )
-
-    gender = forms.CharField(
-        max_length=200,
-        widget=forms.Select(
-            choices=GENDER,
-
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'Gender',
-            }
-        ),
-        label="Choose Your Gender Below",
-    )
-
-    level = forms.ModelChoiceField(queryset=Level.objects.all(),
-                                   widget=forms.Select(
-                                       attrs={
-                                           'class': 'form-control',
-                                              }),
-                                   empty_label='Choose Level')
-
-    program = forms.ModelChoiceField(queryset=Program.objects.all(),
-                                   widget=forms.Select(
-                                       attrs={'class': 'form-control',}),
-                                   empty_label='Choose Program')
-
-    username = forms.CharField(
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'User Name',
-            }
-        ),
-        label="User Name",
-    )
-
-    class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'level', 'is_student', 'gender', 'phone', 'email']
-
-    # @transaction.atomic()
-    # def save(self):
-    #     user = super().save(commit=False)
-    #     user.is_student = True
-    #     user.save()
-    #     student = Student.objects.create(user=user, id_number=user.username, level=self.cleaned_data.get('level'), program=self.cleaned_data.get('program'))
-    #
-    #     # get_class = SchoolClass.objects.get(classname__exact=self.cleaned_data.get('schoolclass'))
-    #
-    #     student.save()
-    #
-    #     get_class = SchoolClass.objects.get(id=student.schoolclass.id)
-    #     for c in get_class.courses.all():
-    #         taken_course = TakenCourse.objects.create(student=student, semester=c.semester, course=c)
-    #         taken_course.save()
-    #         print("THE CLASS: ", c)
-    #
-    #     #print("CLASS NAME: ", get_class.classname)
-    #     return user
-
-
-
 class OnlineAdmissionForm(forms.ModelForm):
     GENDER = (
         ("---------", "---------"),
@@ -613,7 +477,16 @@ class OnlineAdmissionForm(forms.ModelForm):
         ('Rejected', "Rejected"),
     )
 
-
+    USER_GROUPS = (
+        ("---------", "---------"),
+        ('Admissions Office', "Admissions Office"),
+        ('Accounts Office', "Accounts Office"),
+        ('Dean Of Students Affairs Office', "Dean Of Students Affairs Office"),
+        ('ICT Office', "ICT Office"),
+        ("Program Coordinator or Principal Lecturer Office", "Program Coordinator or Principal Lecturer Office"),
+        ('Registrar Office', "Registrar Office"),
+        ('Complete', "Complete"),
+    )
     #
     # subject = forms.CharField(
     #     # max_length=200,
@@ -859,7 +732,7 @@ class OnlineAdmissionForm(forms.ModelForm):
             attrs={
                 'type': 'text',
                 'class': 'form-control',
-                'placeholder': 'enter sponsor or next of kin address here',
+                'placeholder': '',
             }
         ),
         label="Sponsor Or Next of Kin Address:",
@@ -887,7 +760,7 @@ class OnlineAdmissionForm(forms.ModelForm):
                 'placeholder': '',
             }
         ),
-        label="High/Secondary School Name:",
+        label="High School Name:",
     )
 
     school_start_year = forms.DateField(
@@ -1326,14 +1199,13 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
     )
 
     USER_GROUPS = (
-        ('Admissions Office', 'Admissions Office'),
-        ('Accounts Office', 'Accounts Office'),
-        ('Dean Of Students Affairs Office', 'Dean Of Students Affairs Office'),
-        ('ICT Office', 'ICT Office'),
-        ('Program Coordinator or Principal Lecturer Office', 'Program Coordinator or Principal Lecturer Office'),
-        ('Registrar Office', 'Registrar Office'),
-        ('Lecturer', 'Lecturer'),
-        ('Other Staff', "Other Staff"),
+        ('Admissions Office', "Admissions Office"),
+        ('Accounts Office', "Accounts Office"),
+        ('Dean Of Students Affairs Office', "Dean Of Students Affairs Office"),
+        ('ICT Office', "ICT Office"),
+        ("Program Coordinator or Principal Lecturer Office", "Program Coordinator or Principal Lecturer Office"),
+        ('Registrar Office', "Registrar Office"),
+        ('Complete', "Complete"),
     )
     #
     # subject = forms.CharField(
@@ -1579,7 +1451,7 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
             attrs={
                 'type': 'text',
                 'class': 'form-control',
-                'placeholder': 'enter sponsor or next of kin address',
+                'placeholder': '',
             }
         ),
         label="Sponsor Or Next of Kin Address:",
@@ -1607,7 +1479,7 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
                 'placeholder': '',
             }
         ),
-        label="High/Secondary School Name:",
+        label="High School Name:",
     )
 
     school_start_year = forms.DateField(
@@ -1897,103 +1769,3 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
                   'temp_password']
 
 
-class AddPaymentTypeForm(forms.ModelForm):
-    payment_type_name = forms.CharField(
-        max_length=200,
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'enter payment type name here',
-            }
-        ),
-        label="Payment Type Name:",
-    )
-
-    class Meta:
-        model = PaymentType
-        fields = ['payment_type_name', ]
-
-
-class AddPaymentStructureForm(forms.ModelForm):
-    payment_level = forms.ModelChoiceField(queryset=Level.objects.all(),
-                                       widget=forms.Select(
-                                           attrs={
-                                               'class': 'form-control',
-                                                  }),
-                                       label='Payment Level',
-                                       empty_label='--------------------',
-                                      )
-
-    amount_to_be_paid = forms.DecimalField(
-        max_digits=20,
-        decimal_places=2,
-        required=False,
-        widget=forms.NumberInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'Amount Due',
-            }
-        ),
-        label="Amount Due",
-    )
-
-    payment_description = forms.ModelChoiceField(queryset=PaymentType.objects.all(),
-                                       widget=forms.Select(
-                                           attrs={
-                                               'class': 'form-control',
-                                                  }),
-                                       label='Payment Description',
-                                       empty_label='--------------------',
-                                      )
-
-    class Meta:
-        model = PaymentStructure
-        fields = ['payment_level', 'amount_to_be_paid', 'payment_description']
-
-
-class PaymentCollectForm(forms.ModelForm):
-    paymentstructure = forms.ModelChoiceField(queryset=PaymentStructure.objects.all(),
-                                       widget=forms.Select(
-                                           attrs={
-                                               'class': 'form-control',
-                                                  }),
-                                       label='Payment Structure',
-                                       empty_label='--------------------',
-                                      )
-
-    semester = forms.ModelChoiceField(queryset=Semester.objects.all(),
-                                       widget=forms.Select(
-                                           attrs={
-                                               'class': 'form-control',
-                                                  }),
-                                       label='Session',
-                                       empty_label='--------------------',
-                                      )
-
-    student = forms.ModelChoiceField(queryset=Student.objects.all(),
-                                       widget=forms.Select(
-                                           attrs={'class': 'form-control',}),
-                                       label='Student',
-                                       empty_label='--------------------',
-                                     )
-
-    amountpaid = forms.DecimalField(
-        max_digits=20,
-        decimal_places=2,
-        required=False,
-        widget=forms.NumberInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-                'placeholder': 'Amount Paid',
-            }
-        ),
-        label="Amount Paid",
-    )
-
-    class Meta:
-        model = Payment
-        fields = ['semester', 'student', 'paymentstructure', 'amountpaid']

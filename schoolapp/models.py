@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
-import decimal
+
 
 
 # Create your models here.
@@ -249,6 +249,11 @@ COUNTRIES = (
     ('Unknown or unspecified country', 'Unknown or unspecified country'),
 )
 
+SEMESTER = (
+    ('FIRST', "First"),
+    ('SECOND', "Second"),
+    ('THIRD', "Third"),
+)
 
 GENDER = (
     ('Male', "Male"),
@@ -293,58 +298,13 @@ APPLICATION_STATUS_CHOICES = (
 )
 
 USER_GROUPS = (
-    ('Admissions Office', 'Admissions Office'),
-    ('Accounts Office', 'Accounts Office'),
-    ('Dean Of Students Affairs Office', 'Dean Of Students Affairs Office'),
-    ('ICT Office', 'ICT Office'),
-    ('Program Coordinator or Principal Lecturer Office', 'Program Coordinator or Principal Lecturer Office'),
-    ('Registrar Office', 'Registrar Office'),
-    ('Lecturer', 'Lecturer'),
-    ('Other Staff', "Other Staff"),
-)
-
-A = "A"
-B = "B"
-C = "C"
-D = "D"
-F = "F"
-PASS = "PASS"
-FAIL = "FAIL"
-
-GRADE = (
-    (A, 'A'),
-    (B, 'B'),
-    (C, 'C'),
-    (D, 'D'),
-    (F, 'F'),
-)
-
-COMMENT = (
-    (PASS, "PASS"),
-    (FAIL, "FAIL"),
-)
-
-FIRST = "First"
-SECOND = "Second"
-
-SEMESTER = (
-    ("Semester 1", "Semester 1"),
-    ("Semester 2", "Semester 2"),
-)
-
-CLASS_ATTENDANCE = (
-    ('Present', 'Present'),
-    ('Absent', 'Absent'),
-)
-
-DAYS = (
-    ("Sun", "Sunday"),
-    ("Mon", "Monday"),
-    ("Tue", "Tuesday"),
-    ("Wed", "Wednesday"),
-    ("Thur", "Thursday"),
-    ("Fri", "Friday"),
-    ("Sat", "Saturday"),
+    ('Admissions Office', "Admissions Office"),
+    ('Accounts Office', "Accounts Office"),
+    ('Dean Of Students Affairs Office', "Dean Of Students Affairs Office"),
+    ('ICT Office', "ICT Office"),
+    ("Program Coordinator or Principal Lecturer Office", "Program Coordinator or Principal Lecturer Office"),
+    ('Registrar Office', "Registrar Office"),
+    ('Other', "Other"),
 )
 
 
@@ -360,15 +320,15 @@ class User(AbstractUser):
     user_group = models.CharField('User Group', max_length=60, blank=True, null=True, choices=USER_GROUPS)
     phone = models.CharField(max_length=60, blank=True, null=True)
     # address = models.CharField(max_length=60, blank=True, null=True)
-    picture = models.ImageField(upload_to="users/pictures/%Y/%m/%d'", blank=True, null=True)
+    # picture = models.ImageField(upload_to="users/pictures/%Y/%m/%d'", blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
 
-    def get_picture(self):
-        no_picture = f'{settings.STATIC_URL}schoolapp/systempages/assets/img/img_avatar.png'
-        try:
-            return self.picture.url
-        except Exception:
-            return no_picture
+    # def get_picture(self):
+    #     no_picture = f'{settings.STATIC_URL}schoolapp/images/img_avatar.png'
+    #     try:
+    #         return self.picture.url
+    #     except Exception:
+    #         return no_picture
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}" if self.first_name and self.last_name else self.username
@@ -409,7 +369,8 @@ class Program(models.Model):
     program_type = models.ForeignKey(ProgramType, blank=True, on_delete=models.CASCADE)
     program_description = models.TextField()
     program_duration = models.CharField('Duration', null=True, blank=True, max_length=200)
-    program_coordinator = models.ForeignKey(User, max_length=200, null=True, blank=True, on_delete=models.SET_NULL)
+    program_coordinator = models.ForeignKey(User, max_length=200, null=True, blank=True, on_delete=models.DO_NOTHING)
+    slug = models.SlugField(null=True, blank=True)
 
     def __str__(self):
         return self.program_name
@@ -421,11 +382,11 @@ class Session(models.Model):
     next_session_begins = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return 'Session: ' + self.session
+        return self.session
 
 
 class Semester(models.Model):
-    semester = models.CharField(max_length=200, choices=SEMESTER, blank=True)
+    semester = models.CharField(max_length=10, choices=SEMESTER, blank=True)
     is_current_semester = models.BooleanField(default=False, blank=True, null=True)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, blank=True, null=True)
     next_semester_begins = models.DateField(null=True, blank=True)
@@ -451,47 +412,30 @@ class Course(models.Model):
     course_program = models.ForeignKey(Program, verbose_name='Program', help_text='Program to which the course belongs',
                                        on_delete=models.CASCADE)
     course_description = models.TextField('Course Description', null=True, blank=True)
-    semester = models.CharField(max_length=200, choices=SEMESTER, blank=True)
+    semester = models.CharField(max_length=10, choices=SEMESTER, blank=True)
     level = models.ForeignKey(Level, verbose_name='Year', default='', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.course_name
 
 
-class SchoolClass(models.Model):
-    grade = models.ForeignKey(Level, verbose_name='Level', default='', on_delete=models.CASCADE)
-    classname = models.CharField('Enter Class Title', max_length=200, default='', help_text='name of class, (eg. A)')
-    lecturer = models.ForeignKey(User, verbose_name='Assign Lecturer', max_length=200, default='',
-                                     on_delete=models.CASCADE)
-    courses = models.ManyToManyField(Course, verbose_name='Choose Courses', related_name='class_subject',
-                                     help_text='Hold Ctrl to choose multiple')
-
-    def __str__(self):
-        return 'Grade: ' + str(self.grade) + self.classname + ', Teacher: ' + str(self.lecturer)
-
-    class Meta:
-        verbose_name = 'School Class'
-        verbose_name_plural = 'School Classes'
-
-
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    student_number = models.CharField(null=True, blank=True, max_length=20, unique=True)
     program = models.ForeignKey(Program, verbose_name='Program', default='', on_delete=models.CASCADE)
-    student_number = models.ForeignKey('StudentNumber', max_length=200, default='', verbose_name='Student Number',
-                                       on_delete=models.CASCADE)
     admission_date = models.DateField(auto_now_add=True, null=True, blank=True)
     level = models.ForeignKey(Level, verbose_name='Current Year Of Study', default='', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.student_number.full_student_no} - {self.user.get_full_name()} - {str(self.level)}'
+        return f'{self.user.get_full_name()}, {str(self.level)}Year'
 
-    # def save(self, **kwargs):
-    #     if not self.id:
-    #         # set is_student to be true
-    #         u = User.objects.get(pk=self.user.pk)
-    #         u.is_student = True
-    #         u.save(force_update=u.is_active)
-    #         super(Student, self).save()
+    def save(self, **kwargs):
+        if not self.id:
+            # set is_student to be true
+            u = User.objects.get(pk=self.user.pk)
+            u.is_student = True
+            u.save(force_update=u.is_active)
+            super(Student, self).save()
 
     # def get_absolute_url(self):
     #     return reverse('profile')
@@ -644,309 +588,3 @@ class SystemSettings(models.Model):
 
     class Meta:
         verbose_name_plural = 'System Settings'
-
-
-class ExamTimeTable(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    date = models.DateField()
-    time = models.TimeField()
-    venue = models.CharField(max_length=200, blank=True, null=True)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    additional_info = models.TextField(max_length=1000, blank=True, null=True)
-
-    def __str__(self):
-        return str(self.course) + ', ' + str(self.venue) + ', ' + str(self.date)
-
-
-class CourseAllocation(models.Model):
-    lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
-    courses = models.ManyToManyField(Course, related_name='allocated_course')
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, blank=True, null=True)
-
-    def __str__(self):
-        return self.lecturer.username
-
-
-class Result(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    gpa = models.FloatField(null=True)
-    cgpa = models.FloatField(null=True)
-    semester = models.CharField(max_length=100, choices=SEMESTER)
-    session = models.CharField(max_length=100, blank=True, null=True)
-    level = models.ForeignKey(Level, verbose_name='Level', default='', on_delete=models.CASCADE)
-
-
-class SchoolDetails(models.Model):
-    schoolname = models.CharField('Name Of School', max_length=500, default='')
-    address = models.CharField('School Address', max_length=200, null=True, blank=True, default='School Address')
-    email = models.CharField('Email Address', max_length=200, null=True, blank=True,
-                             default='exampleemail@exampleemail.com')
-    facebook = models.CharField('Facebook Page Link', max_length=1000, blank=True, null=True)
-    twitter = models.CharField('Twitter', max_length=1000, blank=True, null=True)
-    instagram = models.CharField('Instagram', max_length=1000, blank=True, null=True)
-    phone = models.CharField('Tel/Cell', max_length=200, null=True, blank=True, default='Tel/Cell Number')
-    photo = models.ImageField('School logo', upload_to='school/logo/%Y/%m/%d', default='', null=True, blank=True)
-
-    class Meta:
-        verbose_name_plural = 'School Details'
-        verbose_name = 'School Details'
-
-    def __str__(self):
-        return self.schoolname
-
-
-class PupilAttendance(models.Model):
-    nameofclass = models.ForeignKey(SchoolClass, verbose_name='Class', default='', on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, verbose_name='Student', default='', on_delete=models.CASCADE)
-    # course = models.ForeignKey(Course, verbose_name='Course', default='', on_delete=models.CASCADE)
-    mark_attendance = models.CharField(max_length=50, default='Present', choices=CLASS_ATTENDANCE)
-    daysdate = models.DateField('Attended On', default='')
-
-    class Meta:
-        verbose_name = 'Student Attendance'
-        verbose_name_plural = 'Student Attendance'
-
-    def __str__(self):
-        return str(self.nameofclass) + ' - ' + str(self.student)
-
-
-class Timetable(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    day = models.CharField('Day', choices=DAYS, max_length=20)
-    start_time = models.TimeField('Start Time', )
-    end_time = models.TimeField('End Time', )
-    venue = models.CharField('Venue', max_length=200, null=True, blank=True, help_text='Optional')
-    description = models.CharField('Description', max_length=200, null=True, blank=True, help_text='Optional')
-
-    def __str__(self):
-        return str(self.course.course_name)
-
-
-class Announcement(models.Model):
-    teacher = models.ForeignKey(User, max_length=200, verbose_name='Lecturers Name', on_delete=models.CASCADE)
-    announcement = models.TextField('News Details', max_length=10000, )
-    announcementdatetime = models.DateTimeField(auto_now=True, verbose_name='Date')
-
-    class Meta:
-        verbose_name_plural = 'Announcements'
-        verbose_name = 'Announcement'
-
-    def __str__(self):
-        return str(self.teacher) + ' - ' + self.announcement
-
-
-class DepartmentOfTeacher(models.Model):
-    department = models.ForeignKey(Department, verbose_name='Name Of Department', default='',
-                                   on_delete=models.CASCADE)
-    lecturer = models.CharField('Lecturer', default='', max_length=200)
-
-    class Meta:
-        verbose_name = 'Lecturer And Department'
-        verbose_name_plural = 'Lecturer And Department'
-
-    def __str__(self):
-        return str(self.department) + ' - ' + str(self.lecturer)
-
-
-class TakenCourse(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    semester = models.ForeignKey(Semester, null=True, blank=True, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='taken_courses')
-    ca = models.PositiveIntegerField(blank=True, null=True, default=0)
-    exam = models.PositiveIntegerField(blank=True, null=True, default=0)
-    total = models.PositiveIntegerField(blank=True, null=True, default=0)
-    grade = models.CharField(choices=GRADE, max_length=1, blank=True)
-    comment = models.CharField(choices=COMMENT, max_length=200, blank=True)
-
-    def get_absolute_url(self):
-        return reverse('update_score', kwargs={'pk': self.pk})
-
-    def get_total(self, ca, exam):
-        return int(ca) + int(exam)
-
-    def get_grade(self, ca, exam):
-        total = int(ca) + int(exam)
-        if total >= 70:
-            grade = A
-        elif total >= 60:
-            grade = B
-        elif total >= 50:
-            grade = C
-        elif total >= 45:
-            grade = D
-        else:
-            grade = F
-        return grade
-
-    def get_comment(self, grade):
-        if not grade == "F":
-            comment = PASS
-        else:
-            comment = FAIL
-        return comment
-
-    def calculate_gpa(self, total_unit_in_semester):
-        current_semester = Semester.objects.get(is_current_semester=True)
-        student = TakenCourse.objects.filter(student=self.student, course__level=self.student.level,
-                                             course__semester=current_semester)
-        p = 0
-        point = 0
-        for i in student:
-            courseUnit = i.course.courseUnit
-            if i.grade == A:
-                point = 5
-            elif i.grade == B:
-                point = 4
-            elif i.grade == C:
-                point = 3
-            elif i.grade == D:
-                point = 2
-            else:
-                point = 0
-            p += int(courseUnit) * point
-        try:
-            gpa = (p / total_unit_in_semester)
-            return round(gpa, 1)
-        except ZeroDivisionError:
-            return 0
-
-    def calculate_cgpa(self):
-        current_semester = Semester.objects.get(is_current_semester=True)
-        previousResult = Result.objects.filter(student__id=self.student.id, level__lt=self.student.level)
-        previousCGPA = 0
-        for i in previousResult:
-            if i.cgpa is not None:
-                previousCGPA += i.cgpa
-        cgpa = 0
-        if str(current_semester) == SECOND:
-            try:
-                first_sem_gpa = Result.objects.get(student=self.student.id, semester=FIRST, level=self.student.level)
-                first_sem_gpa += first_sem_gpa.gpa.gpa
-            except:
-                first_sem_gpa = 0
-
-            try:
-                sec_sem_gpa = Result.objects.get(student=self.student.id, semester=SECOND, level=self.student.level)
-                sec_sem_gpa += sec_sem_gpa.gpa
-            except:
-                sec_sem_gpa = 0
-
-            taken_courses = TakenCourse.objects.filter(student=self.student, student__level=self.student.level)
-            TCU = 0
-            for i in taken_courses:
-                TCU += int(i.course.courseUnit)
-            cpga = first_sem_gpa + sec_sem_gpa / TCU
-
-            return round(cgpa, 2)
-
-
-class PaymentType(models.Model):
-    payment_type_name = models.CharField('Payment Type', max_length=200, blank=True, null=True)
-
-    class Meta:
-        verbose_name = 'Payment Type'
-        verbose_name_plural = 'Payment Type'
-
-    def __str__(self):
-        return self.payment_type_name
-
-
-class PaymentStructure(models.Model):
-    payment_level = models.ForeignKey(Level, verbose_name='Year', default='', on_delete=models.CASCADE)
-    amount_to_be_paid = models.DecimalField(verbose_name='Amount To Be Paid', max_digits=20, decimal_places=2, default=0)
-    payment_description = models.ForeignKey(PaymentType, verbose_name='Payment Type', help_text='payment for?', default='', on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = 'Payment Structure'
-        verbose_name_plural = 'Payment Structure'
-
-    def __str__(self):
-        return 'Type: ' + self.payment_description.payment_type_name + ', Amount: ' + str(self.amount_to_be_paid) + ', Level: ' + str(self.payment_level)
-
-
-class Payment(models.Model):
-    semester = models.ForeignKey(Semester, default='', blank=True, null=True,
-                                 verbose_name='Academic Session', on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, verbose_name='Student Name', null=True, blank=True, on_delete=models.CASCADE)
-    paymentstructure = models.ForeignKey(PaymentStructure, verbose_name='Payment Structure', null=True, blank=True,
-                                  on_delete=models.CASCADE)
-    amountpaid = models.DecimalField(verbose_name='Total Amount Paid', max_digits=20, decimal_places=2, default=0)
-    actualamountpaid = models.DecimalField(verbose_name='Actual Amount Paid', max_digits=20, decimal_places=2,
-                                           default=0, editable=False)
-    balance = models.DecimalField(verbose_name='Balance', max_digits=20, decimal_places=2, default=0, editable=False)
-    paymentstatus = models.CharField(max_length=30, default='Fully Paid', blank=True, null=True, editable=False)
-    paymentdate = models.DateField('Payment Date', auto_now=True)
-    total_amount_to_be_paid = models.DecimalField('Total Amount To Be Paid', max_digits=20, decimal_places=2, default=0, editable=False)
-
-    class Meta:
-        verbose_name = 'Payment'
-        verbose_name_plural = 'Payments'
-
-    def save(self, **kwargs):
-
-        if not self.id:
-            payment = Payment.objects.filter(student__user_id=self.student.user.id).order_by('-id')[:1]
-            actual_amount_to_be_paid = self.paymentstructure.amount_to_be_paid
-            self.actualamountpaid = self.amountpaid
-            amountEntered = decimal.Decimal(self.amountpaid)
-
-            if payment:
-
-                for f in payment:
-                    print("")
-                    print("SESSION: ", f.semester, "TOTAL: ", f.total_amount_to_be_paid, ", PAID: ", f.amountpaid)
-
-                    # check if student over paid
-                    if f.semester != self.semester and f.balance < 0:
-                        print("FIRST IF STATEMENT:::::")
-                        self.amountpaid = decimal.Decimal(self.amountpaid) + (f.amountpaid - f.total_amount_to_be_paid)
-                        paid = self.amountpaid
-                        self.balance = actual_amount_to_be_paid - paid
-                        self.total_amount_to_be_paid = actual_amount_to_be_paid
-
-                    # check if student under paid
-                    if f.semester != self.semester and f.balance >= 0:
-                        print("SECOND IF STATEMENT:::::")
-                        self.amountpaid = decimal.Decimal(self.amountpaid) - f.balance
-                        paid = decimal.Decimal(self.amountpaid)
-                        self.balance = actual_amount_to_be_paid - paid
-                        self.total_amount_to_be_paid = actual_amount_to_be_paid
-
-                    # if f.academicsession == self.academicsession and actualfees > f.amountpaid > 0:
-                    #     print("THIRD IF STATEMENT:::::")
-                    #     self.amountpaid = decimal.Decimal(self.amountpaid) + f.amountpaid
-                    #     paid = decimal.Decimal(self.amountpaid)
-                    #     self.balance = actualfees - paid
-                    #     self.total = actualfees
-
-                    if f.semester == self.semester and f.balance >= 0:
-                        print("FOURTH IF STATEMENT:::::")
-                        self.amountpaid = decimal.Decimal(self.amountpaid) + f.amountpaid
-                        # paid = decimal.Decimal(self.amountpaid)
-                        self.balance = f.balance - amountEntered
-                        self.total_amount_to_be_paid = actual_amount_to_be_paid
-
-                    if f.semester == self.semester and f.balance < 0:
-                        print("FIFTH IF STATEMENT:::::")
-                        self.amountpaid = decimal.Decimal(self.amountpaid) + f.amountpaid
-                        # paid = decimal.Decimal(self.amountpaid)
-                        self.balance = f.balance - amountEntered
-                        self.total_amount_to_be_paid = actual_amount_to_be_paid
-
-            else:
-                self.balance = actual_amount_to_be_paid - decimal.Decimal(self.amountpaid)
-                self.total_amount_to_be_paid = actual_amount_to_be_paid
-
-            if self.balance > 0:
-                self.paymentstatus = 'Got Balance'
-
-            # activate the user upon subscription
-            # u = User.objects.get(pk=self.user.pk)
-            # u.is_active = True
-            # u.save(force_update=u.is_active)
-
-            super(Payment, self).save()
-
-    def __str__(self):
-        return str(self.student) + ' - ' + str(self.paymentstructure)

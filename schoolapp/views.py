@@ -8,15 +8,12 @@ from django.db import IntegrityError
 from django.db.models import Max
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.views.generic import CreateView
-
 from schoolapp.models import User, Department, School, Program, Course, StudentNumber, SystemSettings, Admission, \
-    Session, SchoolClass, Student, Semester, TakenCourse, PaymentType, PaymentStructure, Payment
+    Session
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from .forms import OnlineAdmissionForm, AddTeacherForm, AddSchoolForm, AddDepartmentForm, UpdateOnlineApplicationForm, \
-    AddStudentForm, PaymentCollectForm, AddPaymentTypeForm, AddPaymentStructureForm
+from .forms import OnlineAdmissionForm, AddTeacherForm, AddSchoolForm, AddDepartmentForm, UpdateOnlineApplicationForm
 from .serializers import ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -97,23 +94,22 @@ def testtemplate(request):
 def templogintocheckapplicationstatus(request):
     print('Method Called')
     if request.method == 'POST':
-        student_no = request.POST.get('student_no')
+        nrc_no = request.POST.get('nrc_no')
         tmp_password = request.POST.get('tmp_password')
-        print('STUDENT NO: ', student_no)
+        print('NRC: ', nrc_no)
         print('PASSWORD: ', tmp_password)
-        if Admission.objects.filter(student_number__full_student_no=student_no, temp_password__exact=tmp_password):
+        if Admission.objects.filter(nrc_no__exact=nrc_no, temp_password__exact=tmp_password):
             print('FOUND')
-            application_details = Admission.objects.get(student_number__full_student_no=student_no,
-                                                        temp_password__exact=tmp_password)
+            application_details = Admission.objects.get(nrc_no__exact=nrc_no, temp_password__exact=tmp_password)
             return render(request, 'schoolapp/landingpages/checkapplicationstatus.html',
                           {
                               'application_detail': application_details,
-                              'student_no': student_no
+                              'nrc_no': nrc_no
                           })
         else:
             return render(request, 'schoolapp/landingpages/templogin.html',
                           {
-                              'message': 'Student Number or Password not correct!'
+                              'message': 'NRC Number or Password not correct!'
                           })
     else:
         return render(request, 'schoolapp/landingpages/templogin.html', {})
@@ -223,13 +219,13 @@ def online_admission(request):
                 application_form.cleaned_data.get('program_applied_for')) + \
                       ' has been successfully submitted, you will be notified once it has been reviewed by the school' \
                       ' administration. You can check the status of your application via this link https://wucsmstest.pythonanywhere.com/application-status/ \n' \
-                      'You will be required to provide your Student Number and the temporal system gerated password.\n\n' \
-                      'STUDENT NO.: ' + sn_obj.full_student_no + '\n' \
-                                                                 'PASSWORD: ' + tmp_password + '\n' \
-                                                                                               'LINK: https://wucsmstest.pythonanywhere.com/application-status/\n\n' \
-                                                                                               'Keep the information above safe or you will be unable to see your application status.\n\n' \
-                                                                                               'You can go back and make changes to your application details before close of application,\n' \
-                                                                                               'For more information, contact the academic office on: 0900000000 or 0700000000'
+                      'You will be required to provide your NRC number and the temporal system gerated password.\n\n' \
+                      'NRC No.: ' + application_form.cleaned_data.get('nrc_no') + '\n' \
+                                                                                  'PASSWORD: ' + tmp_password + '\n' \
+                                                                                                                'LINK: https://wucsmstest.pythonanywhere.com/application-status/\n\n' \
+                                                                                                                'Keep the information above safe or you will be unable to see your application status.\n\n' \
+                                                                                                                'You can go back and make changes to your application details before close of application,\n' \
+                                                                                                                'For more information, contact the academic office on: 0900000000 or 0700000000'
 
             from_email = 'chrispinkay@gmail.com'
             try:
@@ -284,9 +280,9 @@ def online_admission(request):
                       })
 
 
-def updateonlineapplication(request, student_no):
+def updateonlineapplication(request, nrc_no):
     if request.method == 'POST':
-        application = Admission.objects.get(student_number__full_student_no=student_no)
+        application = Admission.objects.get(nrc_no=nrc_no)
         form = UpdateOnlineApplicationForm(request.POST, request.FILES, instance=application)
         print('INSIDE POST')
         print(form.errors)
@@ -299,17 +295,17 @@ def updateonlineapplication(request, student_no):
             return render(request, 'schoolapp/landingpages/checkapplicationstatus.html',
                           {
                               'application_detail': application,
-                              'student_no': student_no
+                              'nrc_no': nrc_no
                           })
         else:
             return render(request, 'schoolapp/landingpages/update_application.html',
                           {
                               'form': form,
-                              'application': application,
-                              'student_no': student_no
+                              'application_detail': application,
+                              'nrc_no': nrc_no
                           })
 
-    application = Admission.objects.get(student_number__full_student_no=student_no)
+    application = Admission.objects.get(nrc_no=nrc_no)
     form = UpdateOnlineApplicationForm(instance=application)
     return render(request, 'schoolapp/landingpages/update_application.html',
                   {
@@ -332,6 +328,7 @@ def departments(request):
 
 
 def add_department(request):
+    add_department_form = AddDepartmentForm()
     if request.method == 'POST':
         add_department_form = AddDepartmentForm(request.POST, request.FILES)
         print('INSIDE POST')
@@ -339,22 +336,19 @@ def add_department(request):
             print('FORM VALID')
             print(add_department_form.cleaned_data['department_name'])
             print(add_department_form.cleaned_data['department_description'])
-            print(add_department_form.cleaned_data['hod'])
             add_department_form.save()
-            return redirect('departments')
-            # departments = Department.objects.all()
-            # return render(request, 'schoolapp/systempages/departments.html',
-            #               {
-            #                   'departments': departments,
-            #               })
+            # return redirect('departments')
+            departments = Department.objects.all()
+            return render(request, 'schoolapp/systempages/departments.html',
+                          {
+                              'departments': departments,
+                          })
 
         else:
-            add_department_form = AddDepartmentForm()
             return render(request, 'schoolapp/systempages/add-department.html',
                           {
                               'add_department_form': add_department_form,
                           })
-    add_department_form = AddDepartmentForm()
     return render(request, 'schoolapp/systempages/add-department.html',
                   {
                       'add_department_form': add_department_form,
@@ -397,15 +391,6 @@ def programs(request):
                       'schools': schools,
                       'programs': programs,
                   })
-
-
-# lists teachers
-@login_required()
-def admin_list_programs(request):
-    programs = Program.objects.all()
-    return render(request, 'schoolapp/systempages/admin_program_list.html', {
-        'programs': programs,
-    })
 
 
 def program_details(request, program_id):
@@ -593,17 +578,17 @@ def admin_approve_application(request, admission_id):
             subject = 'Admission Confirmation'
 
             message = 'Dear Mr./Mrs./Ms. ' + str(admission_details.last_name) + '\n' \
-                                                                                'Thank you for your application for admission to [name of college]. \n' \
-                                                                                'After reviewing your application and supporting documentation, we regret that we must decline your application at this time. \n' \
-                                                                                'The applicant pool for this academic year has exceeded our available openings for admission. \n' \
-                                                                                'The decision has been difficult, and although you show outstanding potential as a student, the competition is intense. \n' \
-                                                                                'You are welcome to apply after you complete your GRE testing, which was not included in this year’s application. \n' \
-                                                                                'It is a requirement for admission at Woodlands University College.\n\n' \
-                                                                                'We appreciate your consideration of Woodlands University College, along with the time and effort you put into your application. \n' \
-                                                                                'We wish you the best of success in your academic endeavors. We encourage you to continue pursuit of your academic goals.\n\n' \
- \
+            'Thank you for your application for admission to [name of college]. \n' \
+            'After reviewing your application and supporting documentation, we regret that we must decline your application at this time. \n' \
+            'The applicant pool for this academic year has exceeded our available openings for admission. \n' \
+            'The decision has been difficult, and although you show outstanding potential as a student, the competition is intense. \n' \
+            'You are welcome to apply after you complete your GRE testing, which was not included in this year’s application. \n' \
+            'It is a requirement for admission at Woodlands University College.\n\n' \
+            'We appreciate your consideration of Woodlands University College, along with the time and effort you put into your application. \n' \
+            'We wish you the best of success in your academic endeavors. We encourage you to continue pursuit of your academic goals.\n\n' \
+
             'Sincerely,\n\n' \
- \
+
             '' + request.user.get_full_name()
 
         from_email = 'chrispinkay@gmail.com'
@@ -636,20 +621,20 @@ def admin_approve_application(request, admission_id):
         subject = 'Admission Confirmation'
 
         message = 'Dear ' + str(admission_details.first_name) + ', \n\n' \
-                                                                'This is ' + request.user.get_full_name() + ' from the registrars office of Woodlands University College, ' \
-                                                                                                            'I want to congratulate you that you have been qualified for Admission ' + str(
-            admission_details.program_applied_for) + ', and you ' \
-                                                     'are requested to contact the administration department for further process. Your first semester classes ' \
-                                                     'will start on (Date). \n\n' \
-                                                     'Kindly meet the concerned person for fee structure, and course details, etc. ' \
-                                                     'You are among those lucky people who have got the chance to study in such a renowned university. ' \
-                                                     'Looking forward to your action against this letter and hope that you will contact us as early as possible.\n\n ' \
-                                                     'You can go back and make changes before close of application.\n\n' \
-                                                     'Yours sincerely, \n\n' \
-                                                     'Name… \n' \
-                                                     'Registrars Office \n\n' \
-                                                     'Woodlands University College \n\n' \
-                                                     '09777777777 or 09888888888'
+                 'This is ' + request.user.get_full_name() + ' from the registrars office of Woodlands University College, ' \
+                 'I want to congratulate you that you have been qualified for Admission ' + str(
+                 admission_details.program_applied_for) + ', and you ' \
+                 'are requested to contact the administration department for further process. Your first semester classes ' \
+                 'will start on (Date). \n\n' \
+                 'Kindly meet the concerned person for fee structure, and course details, etc. ' \
+                 'You are among those lucky people who have got the chance to study in such a renowned university. ' \
+                 'Looking forward to your action against this letter and hope that you will contact us as early as possible.\n\n ' \
+                 'You can go back and make changes before close of application.\n\n' \
+                 'Yours sincerely, \n\n' \
+                 'Name… \n' \
+                 'Registrars Office \n\n' \
+                 'Woodlands University College \n\n' \
+                 '09777777777 or 09888888888'
 
         from_email = 'chrispinkay@gmail.com'
 
@@ -666,6 +651,7 @@ def admin_approve_application(request, admission_id):
             return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
         except IntegrityError:
             return redirect('list_teacher')
+
 
     # get all admissions
     global admissions
@@ -695,7 +681,7 @@ def admin_approve_application(request, admission_id):
 # lists teachers
 @login_required()
 def list_teacher(request):
-    teachers = User.objects.filter(is_active=True, is_staff=True, is_member_of_staff=True)
+    teachers = User.objects.filter(is_staff=True, is_member_of_staff=True)
     return render(request, 'schoolapp/systempages/teachers.html', {
         'teachers': teachers,
     })
@@ -716,10 +702,8 @@ def add_teacher(request):
             form = add_teacher_form.save(commit=False)
             print('USERNAME: ', add_teacher_form.cleaned_data.get('first_name'))
             f_name = add_teacher_form.cleaned_data.get('first_name')
-            # form.username = request.POST.get('first_name')
-            form.username = f_name.lower()
+            form.username = request.POST.get('first_name')
             form.is_member_of_staff = True
-            form.is_staff = True
 
             form.set_password(result_str)
             print('FORM VALID', result_str)
@@ -733,7 +717,7 @@ def add_teacher(request):
             message = 'Dear, ' + str(f_name) + '\n\n' \
                                                'Your account on Woodlands University College web portal was successfully created.\n\n' \
                                                'Your Login credentials are below:\n\n' \
-                                               'USERNAME: ' + str(f_name.lower()) + '\n' \
+                                               'USERNAME: ' + str(f_name) + '\n' \
                                                                             'PASSWORD: ' + str(result_str) + '\n\n' \
                                                                                                              'Log into your account by Visiting the link below:\n\n' \
                       + request.get_host()
@@ -756,14 +740,14 @@ def add_teacher(request):
             teachers = User.objects.filter(is_member_of_staff=True)
             return render(request, 'schoolapp/systempages/teachers.html', {
                 'add_teacher_form': add_teacher_form,
-                'success_message': 'Lecturer Added Successfully',
+                'success_message': 'Teacher Added Successfully',
                 'teachers': teachers
             })
 
     add_teacher_form = AddTeacherForm()
     return render(request, 'schoolapp/systempages/add-teacher.html', {
         'add_teacher_form': add_teacher_form,
-        'error_message': 'Lecturer Not Added'
+        'error_message': 'Teacher Not Added'
     })
 
 
@@ -773,96 +757,6 @@ def list_students(request):
     students = User.objects.filter(is_student=True)
     return render(request, 'schoolapp/systempages/students.html', {
         'students': students,
-    })
-
-
-# add teacher
-@login_required()
-def add_student(request):
-    if request.method == 'POST':
-        add_student_form = AddStudentForm(request.POST, request.FILES)
-        print('INSIDE POST')
-
-        if add_student_form.is_valid():
-            print('FORM VALID')
-
-            # get form instance
-            form = add_student_form.save(commit=False)
-
-            # generate password
-            letters = string.ascii_lowercase
-            result_str = ''.join(random.choice(letters) for i in range(5))
-            form.set_password(result_str)
-
-            # generate student number
-            # student_no = generateStudentNumberRandomDigits()
-            f_name = add_student_form.cleaned_data.get('first_name')
-            program = add_student_form.cleaned_data.get('program')
-            student_number = request.POST.get('student_number')
-            student_number_obj = StudentNumber.objects.create(full_student_no=student_number)
-            print('STUDENT NO: ', student_number_obj.full_student_no)
-            print('USERNAME: ', student_number_obj.full_student_no)
-
-            # set the username to be student number
-            form.username = student_number_obj
-            form.is_student = True
-
-            try:
-                form.save()
-                user = User.objects.get(username=student_number_obj.full_student_no)
-                print('USER: ', user)
-                student = Student.objects.create(user=user, student_number=student_number_obj,
-                                                 level=add_student_form.cleaned_data.get('level'),
-                                                 program=add_student_form.cleaned_data.get('program'))
-
-                student.save()
-            except IntegrityError:
-                print('INTEGRITY ERROR: ', IntegrityError)
-                return render(request, 'schoolapp/systempages/add-student.html', {
-                    'add_student_form': add_student_form,
-                    'error_message': 'Provided student number: '+student_number_obj.full_student_no+' already taken',
-                })
-
-            # notify agent via mail
-            subject = 'Student Account Creation'
-            message = 'Dear, ' + str(f_name) + '\n\n' \
-                       'Your student account on Woodlands University College web portal for the program '+ str(program) +' was successfully created.\n\n' \
-                       'Your Login credentials are below:\n\n' \
-                       'USERNAME: ' + str(student_number_obj.full_student_no) + '\n' \
-                        'PASSWORD: ' + str(result_str) + '\n' \
-                        'Log into your account by Visiting the link below:\n\n' \
-                      + request.get_host()
-
-            from_email = 'chrispinkay@gmail.com'
-
-            try:
-                send_mail(subject, message, from_email, recipient_list=[add_student_form.cleaned_data.get('email'), ],
-                          fail_silently=False)
-
-            except socket.gaierror:
-                print('NO INTERNET ACCESS')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
-            except ConnectionError:
-                print('CONNECTION ERROR')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
-            except IntegrityError:
-                return redirect('list_students')
-
-            students = User.objects.filter(is_student=True)
-            return render(request, 'schoolapp/systempages/students.html', {
-                'add_student_form': add_student_form,
-                'success_message': 'Student Added Successfully',
-                'students': students
-            })
-        else:
-            print('ERRORS: ', add_student_form.errors)
-            return render(request, 'schoolapp/systempages/add-student.html', {
-                'add_student_form': add_student_form,
-                'error_message': 'Student Not Added: ' + add_student_form.errors,
-            })
-    add_student_form = AddStudentForm()
-    return render(request, 'schoolapp/systempages/add-student.html', {
-        'add_student_form': add_student_form,
     })
 
 
@@ -884,44 +778,60 @@ def add_school(request):
 
         if add_school_form.is_valid():
             print('FORM VALID')
+            letters = string.ascii_lowercase
+            result_str = ''.join(random.choice(letters) for i in range(5))
+
             add_school_form.save()
             print('SCHOOL NAME: ', add_school_form.cleaned_data.get('school_name'))
 
             schools = School.objects.all()
-            return render(request, 'schoolapp/systempages/schools.html', {
+            return render(request, 'schoolapp/systempages/edit_school.html', {
                 'add_school_form': add_school_form,
                 'success_message': 'School Added Successfully',
                 'schools': schools
             })
-        else:
-            add_school_form = AddSchoolForm()
-            return render(request, 'schoolapp/systempages/add-school.html', {
-                'add_school_form': add_school_form,
-                'error_message': 'School Not Added'
-            })
 
     add_school_form = AddSchoolForm()
-    return render(request, 'schoolapp/systempages/add-school.html', {
-        'add_school_form': add_school_form,
-        'error_message': 'School Not Added'
+    return render(request, 'schoolapp/systempages/add-teacher.html', {
+        'add_teacher_form': add_school_form,
+        'error_message': 'Teacher Not Added'
     })
 
 
+@login_required()
+def list_schools(request):
+    schools = School.objects.all()
+    return render(request, 'schoolapp/systempages/schools.html', {
+        'schools': schools,
+    })
 
-# class StudentAddView(CreateView):
-#     model = User
-#     form_class = StudentAddForm
-#     template_name = 'schoolapp/systempages/add-student.html'
-#     classlist = SchoolClass.objects.all()
+# add teacher
+# @login_required()
+# def add_student(request):
+#     if request.method == 'POST':
+#         add_teacher_form = AddStudentForm(request.POST, request.FILES)
+#         print('INSIDE POST')
 #
-#     def get_context_data(self, **kwargs):
-#         kwargs['user_type'] = 'student'
-#         # kwargs['classlist'] = course_list
-#         return super().get_context_data(**kwargs)
+#         if add_teacher_form.is_valid():
+#             print('FORM VALID')
+#             form = add_teacher_form.save(commit=False)
+#             form.username = request.POST.get('first_name')
+#             form.is_member_of_staff = True
+#             form.set_password(generateTempPassword(5))
+#             form.save()
 #
-#     def form_valid(self, form):
-#         user = form.save()
-#         return redirect('list_students')
+#             teachers = User.objects.filter(is_member_of_staff=True)
+#             return render(request, 'schoolapp/systempages/teachers.html', {
+#                 'add_teacher_form': add_teacher_form,
+#                 'success_message': 'Teacher Added Successfully',
+#                 'teachers': teachers
+#             })
+#
+#     add_student_form = AddStudentForm()
+#     return render(request, 'schoolapp/systempages/add-teacher.html', {
+#         'add_teacher_form': add_teacher_form,
+#         'error_message': 'Teacher Not Added'
+#     })
 
 
 def application_report(request, id):
@@ -936,13 +846,13 @@ def application_report(request, id):
     pdf.set_font('Arial', 'B', 16)
     pdf.cell(40, 5, 'WOODLANDS UNIVERSITY COLLEGE', 0, 1)
     pdf.set_font('Arial', '', 13)
-    pdf.cell(40, 5, 'Ibex Hill 2457 Main Street', 0, 1)
+    pdf.cell(40, 5, 'Ibex Hill 2457 Main Street',0,1)
     pdf.set_font('Arial', '', 13)
-    pdf.cell(40, 5, 'Lusaka', 0, 1)
-    pdf.cell(40, 5, 'E-mail: woodlandsuniversity@wuc.uni', 0, 1)
-    pdf.cell(40, 12, 'CALL: 0966186239', 0, 1)
+    pdf.cell(40, 5, 'Lusaka',0,1)
+    pdf.cell(40, 5, 'E-mail: woodlandsuniversity@wuc.uni',0,1)
+    pdf.cell(40, 12, 'CALL: 0966186239',0,1)
     pdf.set_font('Times', 'B', 15)
-    pdf.cell(40, 5, 'Personal Particulars', 0, 1)
+    pdf.cell(40, 5, 'Personal Particulars',0,1)
     pdf.set_font('courier', '', 12)
     pdf.cell(200, 8, f"{'Full Name'.ljust(30)} {'Student Number'.ljust(20)}", 0, 1)
     pdf.cell(200, 8,
@@ -955,188 +865,3 @@ def application_report(request, id):
         pdf.cell(200, 8, f"{line['item'].ljust(30)} {line['amount'].rjust(20)}", 0, 1)
     pdf.output('Wuc Application Form.pdf', 'F')
     return FileResponse(open('Wuc Application Form.pdf', 'rb'), as_attachment=True, content_type='application/pdf')
-
-
-@login_required
-def profile(request):
-    """ Show profile of any user that fire out the request """
-    try:
-        current_semester = Semester.objects.get(is_current_semester=True)
-    except Semester.DoesNotExist:
-        return HttpResponse('Semester does not exist, contact support for help.')
-    if request.user.user_group is 'Lecturer':
-        print("IF LECTURER::")
-        courses = Course.objects.filter(allocated_course__lecturer__pk=request.user.id).filter(
-            semester=current_semester)
-        return render(request, 'schoolapp/profile.html', {"courses": courses, })
-    elif request.user.is_student:
-        print("IF STUDENT::")
-        level = Student.objects.get(user__pk=request.user.id)
-        courses = TakenCourse.objects.filter(student__user__id=request.user.id, course__level=level.level)
-
-        context = {
-            'courses': courses,
-            'level': level,
-        }
-        return render(request, 'schoolapp/profile.html', context)
-    elif request.user.is_superuser:
-        print("IF SUPERUSER::")
-        # level = Student.objects.get(user__pk=request.user.id)
-        # courses = TakenCourse.objects.filter(student__user__id=request.user.id, course__level=level.level)
-        #
-        # context = {
-        #     'courses': courses,
-        #     'level': level,
-        # }
-        return render(request, 'schoolapp/profile.html', {})
-    # elif request.user.is_parent:
-    #     print("IF parent::")
-    #     parent = Parent.objects.get(user__pk=request.user.id)
-    #     students = Children.objects.filter(parent__user__pk=request.user.id)
-    #     # courses = TakenCourse.objects.filter(student__user__id=parent.student.id, )
-    #
-    #     context = {
-    #         # 'courses': courses,
-    #         'students': students,
-    #         'parent': parent,
-    #     }
-    #     return render(request, 'schoolapp/profile.html', context)
-    # elif request.user.is_librarian:
-    #     print("IF LIBRARIAN::")
-    #     books = Book.objects.all()
-    #     return render(request, 'account/profile.html',
-    #                   {
-    #                       "books": books,
-    #                   })
-    else:
-        staff = User.objects.filter(is_member_of_staff=True)
-        return render(request, 'schoolapp/profile.html', {"staff": staff})
-
-@login_required()
-def payment_types_list(request):
-    # Get list of payment types
-    paymenttypes = PaymentType.objects.all()
-
-    return render(request, "schoolapp/systempages/paymenttypes.html",
-                  {
-                      'paymenttypes': paymenttypes,
-                  })
-
-
-@login_required()
-def add_payment_type(request):
-    if request.method == 'POST':
-        add_payment_type_form = AddPaymentTypeForm(request.POST, request.FILES)
-        print('INSIDE POST')
-        if add_payment_type_form.is_valid():
-            print('FORM VALID')
-            print(add_payment_type_form.cleaned_data['payment_type_name'])
-
-            add_payment_type_form.save()
-            # return redirect('payment_types_list')
-            paymenttypes = PaymentType.objects.all()
-            return render(request, 'schoolapp/systempages/paymenttypes.html',
-                          {
-                              'paymenttypes': paymenttypes,
-                              'success_message': 'Payment Type Added'
-                          })
-
-        else:
-            add_payment_type_form = AddPaymentTypeForm()
-            return render(request, 'schoolapp/systempages/add-payment-type.html',
-                          {
-                              'add_payment_type_form': add_payment_type_form,
-                              'error_message': 'Payment Type Not Added'
-                          })
-    add_payment_type_form = AddPaymentTypeForm()
-    return render(request, 'schoolapp/systempages/add-payment-type.html',
-                  {
-                      'add_payment_type_form': add_payment_type_form,
-                      'error_message': 'Payment Type Not Added'
-                  })
-
-
-@login_required()
-def payment_structures_list(request):
-    # Get list of payment structures
-    paymentstructures = PaymentStructure.objects.all()
-
-    return render(request, "schoolapp/systempages/paymentstructures.html",
-                  {
-                      'paymentstructures': paymentstructures,
-                  })
-
-
-@login_required()
-def add_payment_structure(request):
-    if request.method == 'POST':
-        add_payment_structure_form = AddPaymentStructureForm(request.POST, request.FILES)
-        print('INSIDE POST')
-        if add_payment_structure_form.is_valid():
-            print('FORM VALID')
-            # print(add_payment_structure_form.cleaned_data['payment_type_name'])
-
-            add_payment_structure_form.save()
-            # return redirect('payment_types_list')
-            paymentstructures = PaymentStructure.objects.all()
-            return render(request, 'schoolapp/systempages/paymentstructures.html',
-                          {
-                              'paymentstructures': paymentstructures,
-                              'success_message': 'Payment Structure Added'
-                          })
-
-        else:
-            add_payment_structure_form = AddPaymentStructureForm()
-            return render(request, 'schoolapp/systempages/add-payment-structure.html',
-                          {
-                              'add_payment_structure_form': add_payment_structure_form,
-                              'error_message': 'Payment Structure Not Added'
-                          })
-    add_payment_structure_form = AddPaymentStructureForm()
-    return render(request, 'schoolapp/systempages/add-payment-structure.html',
-                  {
-                      'add_payment_structure_form': add_payment_structure_form,
-                      'error_message': 'Payment Structure Not Added'
-                  })
-
-
-@login_required()
-def payment_collections_list(request):
-    # Get list of payment
-    payments = Payment.objects.all()
-
-    return render(request, "schoolapp/systempages/paymentscollection.html",
-                  {
-                      'payments': payments,
-                  })
-
-
-def payment_collect(request):
-    if request.method == 'POST':
-        add_payment_form = PaymentCollectForm(request.POST, request.FILES)
-        print('INSIDE POST')
-
-        if add_payment_form.is_valid():
-            print('FORM VALID')
-
-            add_payment_form.save()
-            # print('SCHOOL NAME: ', payment_collect_form.cleaned_data.get('school_name'))
-
-            payments = Payment.objects.all()
-            return render(request, 'schoolapp/systempages/paymentscollection.html', {
-                'add_payment_form': add_payment_form,
-                'success_message': 'Payment Added Successfully',
-                'payments': payments
-            })
-        else:
-            add_payment_form = PaymentCollectForm()
-            return render(request, 'schoolapp/systempages/add-payment.html', {
-                'add_payment_form': add_payment_form,
-                'error_message': 'Payment Not Added'
-            })
-
-    add_payment_form = PaymentCollectForm()
-    return render(request, 'schoolapp/systempages/add-payment.html', {
-        'add_payment_form': add_payment_form,
-        'error_message': 'Payment Not Added'
-    })

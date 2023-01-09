@@ -1,4 +1,3 @@
-from http.client import HTTPResponse
 import arrow
 
 def generateStudentNumber():
@@ -44,7 +43,7 @@ def generateStudentNumberRandomDigits(request):
         print('Number Already Taken!')
         generateStudentNumberRandomDigits(request)
     else:
-        return HTTPResponse(student_number)
+        return HttpResponse(student_number)
 
 generateRandomNumber()
 # generateStudentNumber()

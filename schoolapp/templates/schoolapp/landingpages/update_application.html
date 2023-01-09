@@ -67,7 +67,7 @@
                                     </ul>
                                 </div>
 
-                                <form action="{% url 'updateonlineapplication' application.student_number %}"
+                                <form action="{% url 'updateonlineapplication' application.nrc_no %}"
                                       class="needs-validation" novalidate method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <div class="tab-content" id="part-tabContent">
