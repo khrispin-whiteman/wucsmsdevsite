@@ -369,8 +369,7 @@ class Program(models.Model):
     program_type = models.ForeignKey(ProgramType, blank=True, on_delete=models.CASCADE)
     program_description = models.TextField()
     program_duration = models.CharField('Duration', null=True, blank=True, max_length=200)
-    program_coordinator = models.ForeignKey(User, max_length=200, null=True, blank=True, on_delete=models.DO_NOTHING)
-    slug = models.SlugField(null=True, blank=True)
+    program_coordinator = models.ForeignKey(User, max_length=200, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.program_name

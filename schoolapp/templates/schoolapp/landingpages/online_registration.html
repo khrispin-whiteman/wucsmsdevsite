@@ -70,9 +70,9 @@
                                                 1</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="part-2-tab" data-toggle="pill" href="#part-2"
-                                               role="tab">Part
-                                                2</a>
+                                            <a class="nav-link" onclick="return false;" id="part-2-tab" data-toggle="pill" href="#part-2"
+                                               role="tab">Part 2
+                                            </a>
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" id="part-3-tab" data-toggle="pill" href="#part-3"
@@ -177,7 +177,7 @@
                                                                         <div class="col-xl-6">
 
                                                                             <div class="form-group">
-                                                                                {{ form.first_name.label_tag }}
+                                                                                {{ form.first_name.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter first name here"
                                                                                        type="text" name="first_name"
@@ -194,7 +194,7 @@
                                                                                 <i style="color: red;">{{ form.first_name.errors }}</i>
                                                                             </div>
                                                                             <div class="form-group">
-                                                                                {{ form.last_name.label_tag }}
+                                                                                {{ form.last_name.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter last name here"
                                                                                        type="text" name="last_name"
@@ -217,7 +217,7 @@
                                                                                 <i style="color: red;">{{ form.other_names.errors }}</i>
                                                                             </div>
                                                                             <div class="form-group">
-                                                                                {{ form.nrc_no.label_tag }}
+                                                                                {{ form.nrc_no.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter NRC number here"
                                                                                        type="text" name="nrc_no"
@@ -233,7 +233,7 @@
                                                                                 <i style="color: red;">{{ form.nrc_no.errors }}</i>
                                                                             </div>
                                                                             <div class="form-group">
-                                                                                {{ form.phone_number.label_tag }}
+                                                                                {{ form.phone_number.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter phone number here"
                                                                                        type="text" name="phone_number"
@@ -250,7 +250,7 @@
                                                                                 <i style="color: red;">{{ form.phone_number.errors }}</i>
                                                                             </div>
                                                                             <div class="form-group">
-                                                                                {{ form.email.label_tag }}
+                                                                                {{ form.email.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter a valid email here"
                                                                                        type="text" name="email"
@@ -279,7 +279,7 @@
                                                                                 <input class="form-control" type="date"
                                                                                        name="date_of_birth"
                                                                                        id="date_of_birth"
-                                                                                       onkeyup="manageDateOfBirth(this)"/>
+                                                                                       onchange="return manageDateOfBirth(this)"/>
                                                                                 <p hidden id="date_of_birth_valid_text">
                                                                                     <small style="color: #2be12b;">Valid
                                                                                         <i class="fa fa-check-circle"></i></small>
@@ -312,7 +312,7 @@
                                                                                 <i style="color: red;">{{ form.nationality.errors }}</i>
                                                                             </div>
                                                                             <div class="form-group">
-                                                                                {{ form.physical_address.label_tag }}
+                                                                                {{ form.physical_address.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter your physical here"
                                                                                        type="text"
@@ -377,7 +377,7 @@
                                                                     <div class="row">
                                                                         <div class="col-xl-6">
                                                                             <div class="form-group">
-                                                                                {{ form.sponsors_name_or_next_of_kin.label_tag }}
+                                                                                {{ form.sponsors_name_or_next_of_kin.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter sponsor or next of kin's name here"
                                                                                        type="text"
@@ -409,7 +409,7 @@
                                                                         </div>
                                                                         <div class="col-xl-6">
                                                                             <div class="form-group">
-                                                                                {{ form.sponsor_or_next_of_kin_cell_no.label_tag }}
+                                                                                {{ form.sponsor_or_next_of_kin_cell_no.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
                                                                                        placeholder="enter sponsor or next of kin's cell no here"
                                                                                        type="text"
@@ -431,8 +431,9 @@
                                                                             <div class="form-group">
                                                                                 {{ form.sponsor_or_next_of_kin_address.label_tag }}
                                                                                 {{ form.sponsor_or_next_of_kin_address }}
-                                                                                <div class="invalid-feedback"><i>Please
-                                                                                    fill out this field.</i></div>
+                                                                                <div class="invalid-feedback">
+                                                                                    <i>Please fill out this field.</i>
+                                                                                </div>
                                                                                 <i style="color: red;">{{ form.sponsor_or_next_of_kin_address.errors }}</i>
                                                                             </div>
                                                                         </div>
@@ -463,7 +464,7 @@
                                             <div class="card">
                                                 <div class="card-header">
                                                     <h1><h5><b style="color: #0e72a2;">PROGRAM OF
-                                                        CHOICE AND HIGH SCHOOL ATTENDED</b></h5></h1>
+                                                        CHOICE AND HIGH/SECONDARY SCHOOL ATTENDED</b></h5></h1>
                                                 </div>
                                                 <div class="card-title"></div>
                                                 <div class="card-body">
@@ -478,7 +479,7 @@
                                                                                 CHOICE</b></h5>
                                                                             <hr>
                                                                             <div class="form-group">
-                                                                                {{ form.program_applied_for.label_tag }}
+                                                                                {{ form.program_applied_for.label_tag }} <i>(required)</i>
                                                                                 <select class="form-control"
                                                                                         id="program_applied_for"
                                                                                         name="program_applied_for"
@@ -502,13 +503,13 @@
                                                                                         choice</small></i></p>
                                                                             </div>
                                                                             <br>
-                                                                            <h5><b style="color: #0e72a2;">HIGH SCHOOL
+                                                                            <h5><b style="color: #0e72a2;">HIGH/SECONDARY SCHOOL
                                                                                 ATTENDED</b></h5>
                                                                             <hr>
                                                                             <div class="form-group">
-                                                                                {{ form.school_name.label_tag }}
+                                                                                {{ form.school_name.label_tag }} <i>(required)</i>
                                                                                 <input class="form-control"
-                                                                                       placeholder="enter high school attended here"
+                                                                                       placeholder="enter high/secondary school attended here"
                                                                                        type="text" name="school_name"
                                                                                        id="school_name"
                                                                                        onkeyup="manageHighSchoolAttended(this)"/>
@@ -524,7 +525,7 @@
                                                                             <div class="row">
                                                                                 <div class="col-md-6">
                                                                                     <div class="form-group">
-                                                                                        {{ form.school_start_year.label_tag }}
+                                                                                        {{ form.school_start_year.label_tag }} <i>(required)</i>
                                                                                         <input class="form-control"
                                                                                                type="date"
                                                                                                name="school_start_year"
@@ -544,7 +545,7 @@
                                                                                 </div>
                                                                                 <div class="col-md-6">
                                                                                     <div class="form-group">
-                                                                                        {{ form.school_end_year.label_tag }}
+                                                                                        {{ form.school_end_year.label_tag }} <i>(required)</i>
                                                                                         <input class="form-control"
                                                                                                type="date"
                                                                                                name="school_end_year"
@@ -870,14 +871,14 @@
                                                                     <div class="row">
                                                                         <div class="col-md-6">
                                                                             <h5>
-                                                                                <b style="color: #0e72a2;">ATTACHMENTS
-                                                                                    (only jpg or png)</b>
+                                                                                <b style="color: #0e72a2;">ATTACHMENTS</b>
                                                                             </h5>
                                                                             <hr>
                                                                             <div class="form-group">
-                                                                                <label class="col-form-label">Upload
-                                                                                    Scanned Grade 12 Results or
-                                                                                    equivalent of Results: </label>
+                                                                                <label class="col-form-label">
+                                                                                    Upload Scanned Grade 12 Results or
+                                                                                    equivalent of Results: <i>(required)</i>
+                                                                                </label>
                                                                                 <input required
                                                                                        id="scanned_statement_of_result"
                                                                                        name="scanned_statement_of_result"
@@ -897,7 +898,7 @@
                                                                             <div class="form-group">
                                                                                 <label class="col-form-label">Upload
                                                                                     Scanned National Registration Card
-                                                                                    (Front): </label>
+                                                                                    (Front): <i>(required)</i></label>
                                                                                 <input required id="scanned_nrc_front"
                                                                                        name="scanned_nrc_front"
                                                                                        type="file"
@@ -917,7 +918,7 @@
                                                                             <div class="form-group">
                                                                                 <label class="col-form-label">Upload
                                                                                     Scanned National Registration Card
-                                                                                    (Back): </label>
+                                                                                    (Back): <i>(required)</i> </label>
                                                                                 <input required id="scanned_nrc_back"
                                                                                        name="scanned_nrc_back"
                                                                                        type="file"
@@ -935,7 +936,7 @@
                                                                             </div>
                                                                             <div class="form-group">
                                                                                 <label class="col-form-label">Upload
-                                                                                    Scanned Deposit Slip: </label>
+                                                                                    Scanned Deposit Slip: <i>(required)</i> </label>
                                                                                 <input required
                                                                                        id="scanned_deposit_slip"
                                                                                        name="scanned_deposit_slip"
@@ -956,13 +957,12 @@
                                                                         </div>
 
                                                                         <div class="col-md-6">
-                                                                            <h5><b style="color: #0e72a2;">ACADEMIC
-                                                                                DOCUMENTS (jpg, png, pdf)</b></h5>
+                                                                            <h5><b style="color: #0e72a2;">ACADEMIC DOCUMENTS</b></h5>
                                                                             <hr>
                                                                             <div class="form-group">
-                                                                                <label class="col-form-label">Upload
-                                                                                    Scanned Professional Certificate
-                                                                                    (Optional): </label>
+                                                                                <label class="col-form-label">
+                                                                                    Upload Scanned Professional Certificate (Optional):
+                                                                                </label>
                                                                                 <input id="scanned_pq_certificate"
                                                                                        name="scanned_pq_certificate"
                                                                                        type="file"
@@ -1111,13 +1111,13 @@
                                                             </div>
                                                             <br>
                                                             <div class="text-center">
-                                                                <small>Note that the <b>Submit Application</b> button
-                                                                    will not work if some required fields are left
-                                                                    blank!</small>
-                                                                <br>
-                                                                <small>Ensure that all required fields are populated
-                                                                    with information!</small>
-                                                                <br>
+{#                                                                <small>Note that the <b>Submit Application</b> button#}
+{#                                                                    will not work if some required fields are left#}
+{#                                                                    blank!</small>#}
+{#                                                                <br>#}
+{#                                                                <small>Ensure that all required fields are populated#}
+{#                                                                    with information!</small>#}
+{#                                                                <br>#}
                                                                 <button type="submit" id="btSubmitApplication" disabled
                                                                         class="btn btn-warning">
                                                                     Submit Application
@@ -1425,8 +1425,8 @@
         //validate scanned deposit slip
         function manageScannedDepositSlip(txt) {
             var bt = document.getElementById('btSubmitApplication');
-            var scanned_deposit_slipInvalidText = document.getElementById('scanned_deposit_slip');
-            var scanned_deposit_slipValidText = document.getElementById('scanned_deposit_slip');
+            var scanned_deposit_slipInvalidText = document.getElementById('scanned_deposit_slip_invalid_text');
+            var scanned_deposit_slipValidText = document.getElementById('scanned_deposit_slip_valid_text');
 
             if (txt.value === '') {
                 bt.disabled = true;
@@ -1448,6 +1448,9 @@
         document.getElementById("btnNextP3").addEventListener("click", checkInputValidationPart3);
         document.getElementById("btnNextP4").addEventListener("click", checkInputValidationPart4);
         document.getElementById("btnNextP5").addEventListener("click", checkInputValidationPart5);
+
+        // controls for the tab buttons
+        // document.getElementById("part-1-tab").addEventListener("click", checkInputValidationPart1);
 
         //get element ids for Part 1 inputs
         var fName = document.getElementById("first_name");
