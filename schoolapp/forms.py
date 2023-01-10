@@ -760,7 +760,7 @@ class OnlineAdmissionForm(forms.ModelForm):
                 'placeholder': '',
             }
         ),
-        label="High School Name:",
+        label="High/Secondary School Name:",
     )
 
     school_start_year = forms.DateField(
@@ -1451,7 +1451,7 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
             attrs={
                 'type': 'text',
                 'class': 'form-control',
-                'placeholder': '',
+                'placeholder': 'enter sponsor or next of kin address',
             }
         ),
         label="Sponsor Or Next of Kin Address:",
@@ -1479,7 +1479,7 @@ class UpdateOnlineApplicationForm(forms.ModelForm):
                 'placeholder': '',
             }
         ),
-        label="High School Name:",
+        label="High/Secondary School Name:",
     )
 
     school_start_year = forms.DateField(

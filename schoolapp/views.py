@@ -681,7 +681,7 @@ def admin_approve_application(request, admission_id):
 # lists teachers
 @login_required()
 def list_teacher(request):
-    teachers = User.objects.filter(is_staff=True, is_member_of_staff=True)
+    teachers = User.objects.filter(is_active=True, is_staff=True, is_member_of_staff=True)
     return render(request, 'schoolapp/systempages/teachers.html', {
         'teachers': teachers,
     })
@@ -704,6 +704,7 @@ def add_teacher(request):
             f_name = add_teacher_form.cleaned_data.get('first_name')
             form.username = request.POST.get('first_name')
             form.is_member_of_staff = True
+            form.is_staff = True
 
             form.set_password(result_str)
             print('FORM VALID', result_str)
@@ -740,14 +741,14 @@ def add_teacher(request):
             teachers = User.objects.filter(is_member_of_staff=True)
             return render(request, 'schoolapp/systempages/teachers.html', {
                 'add_teacher_form': add_teacher_form,
-                'success_message': 'Teacher Added Successfully',
+                'success_message': 'Lecturer Added Successfully',
                 'teachers': teachers
             })
 
     add_teacher_form = AddTeacherForm()
     return render(request, 'schoolapp/systempages/add-teacher.html', {
         'add_teacher_form': add_teacher_form,
-        'error_message': 'Teacher Not Added'
+        'error_message': 'Lecturer Not Added'
     })
 
 
