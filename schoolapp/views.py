@@ -29,11 +29,10 @@ def index(request):
     departments = Department.objects.all()
     # Get list of schools
     schools = School.objects.all()
-    return render(request, "schoolapp/landingpages/index.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                  })
+    return render(request, "schoolapp/landingpages/index.html", {
+        'departments': departments,
+        'schools': schools,
+    })
 
 
 class ChangePasswordView(APIView):
@@ -42,7 +41,7 @@ class ChangePasswordView(APIView):
     """
     serializer_class = ChangePasswordSerializer
     model = User
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get_object(self, queryset=None):
         obj = self.request.user
@@ -54,8 +53,10 @@ class ChangePasswordView(APIView):
 
         if serializer.is_valid():
             # Check old password
-            if not self.object.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            if not self.object.check_password(
+                    serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]},
+                                status=status.HTTP_400_BAD_REQUEST)
             # set_password also hashes the password that the user will get
             self.object.set_password(serializer.data.get("new_password"))
             self.object.save()
@@ -80,11 +81,18 @@ def dashboard(request):
     departments = Department.objects.all()
     # Get list of schools
     schools = School.objects.all()
-    return render(request, "schoolapp/systempages/index.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                  })
+    return render(request, "schoolapp/systempages/index.html", {
+        'departments': departments,
+        'schools': schools,
+    })
+
+
+def lecturer(request):
+    departments = Department.objects.all()
+    # Get list of schools
+    schools = School.objects.all()
+
+    return render(request, 'schoolapp/lecturers_dashboard/index.html')
 
 
 def testtemplate(request):
@@ -98,26 +106,27 @@ def templogintocheckapplicationstatus(request):
         tmp_password = request.POST.get('tmp_password')
         print('NRC: ', nrc_no)
         print('PASSWORD: ', tmp_password)
-        if Admission.objects.filter(nrc_no__exact=nrc_no, temp_password__exact=tmp_password):
+        if Admission.objects.filter(nrc_no__exact=nrc_no,
+                                    temp_password__exact=tmp_password):
             print('FOUND')
-            application_details = Admission.objects.get(nrc_no__exact=nrc_no, temp_password__exact=tmp_password)
-            return render(request, 'schoolapp/landingpages/checkapplicationstatus.html',
-                          {
-                              'application_detail': application_details,
-                              'nrc_no': nrc_no
-                          })
+            application_details = Admission.objects.get(
+                nrc_no__exact=nrc_no, temp_password__exact=tmp_password)
+            return render(
+                request, 'schoolapp/landingpages/checkapplicationstatus.html',
+                {
+                    'application_detail': application_details,
+                    'nrc_no': nrc_no
+                })
         else:
             return render(request, 'schoolapp/landingpages/templogin.html',
-                          {
-                              'message': 'NRC Number or Password not correct!'
-                          })
+                          {'message': 'NRC Number or Password not correct!'})
     else:
         return render(request, 'schoolapp/landingpages/templogin.html', {})
 
 
 def checkapplicationstatus(request, nrc_no):
-    return render(request, 'schoolapp/landingpages/checkapplicationstatus.html',
-                  {
+    return render(request,
+                  'schoolapp/landingpages/checkapplicationstatus.html', {
                       'nrc_no': nrc_no,
                   })
 
@@ -132,9 +141,7 @@ def generateStudentNumberRandomDigits():
         length = ss.student_no_last_digits_length
     else:
         length = 4
-    random_str = ''.join(
-        random.choice(string.digits) for _ in range(length)
-    )
+    random_str = ''.join(random.choice(string.digits) for _ in range(length))
 
     # random_str = int(random_str) + 1
     # txt = str(random_str)
@@ -195,7 +202,8 @@ def online_admission(request):
             # print('PASSWORD: ', tmp_password)
 
             # get program using id
-            program = Program.objects.get(id=request.POST.get('program_applied_for'))
+            program = Program.objects.get(
+                id=request.POST.get('program_applied_for'))
 
             # generate student number
             student_no = generateStudentNumberRandomDigits()
@@ -229,17 +237,28 @@ def online_admission(request):
 
             from_email = 'chrispinkay@gmail.com'
             try:
-                send_mail(subject, message, from_email, recipient_list=[application_form.cleaned_data.get('email'), ],
+                send_mail(subject,
+                          message,
+                          from_email,
+                          recipient_list=[
+                              application_form.cleaned_data.get('email'),
+                          ],
                           fail_silently=False)
 
             except socket.gaierror:
                 print('NO INTERNET ACCESS')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+                return HttpResponse(
+                    'Check Your Internet Connection And Try Again. Email not sent'
+                )
             except ConnectionError:
                 print('CONNECTION ERROR')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+                return HttpResponse(
+                    'Check Your Internet Connection And Try Again. Email not sent'
+                )
             except SMTPAuthenticationError:
-                return HttpResponse('Host Email Username and Password not accepted, Email Not Sent!')
+                return HttpResponse(
+                    'Host Email Username and Password not accepted, Email Not Sent!'
+                )
 
             # add a success page to be rendered
             messages.success(request, 'Application Successfully Submitted!')
@@ -248,7 +267,9 @@ def online_admission(request):
                 'form': application_form,
                 'programs': programs
             }
-            return render(request, 'schoolapp/landingpages/application_successful.html', context)
+            return render(
+                request, 'schoolapp/landingpages/application_successful.html',
+                context)
             # return redirect('index')
 
         else:
@@ -259,7 +280,9 @@ def online_admission(request):
                 'form': application_form,
                 'programs': programs
             }
-            return render(request, 'schoolapp/landingpages/online_registration.html', context)
+            return render(request,
+                          'schoolapp/landingpages/online_registration.html',
+                          context)
     else:
         # Get list of departments
         departments = Department.objects.all()
@@ -271,19 +294,21 @@ def online_admission(request):
         programs = Program.objects.all()
 
         application_form = OnlineAdmissionForm()
-        return render(request, "schoolapp/landingpages/online_registration.html",
-                      {
-                          'departments': departments,
-                          'schools': schools,
-                          'programs': programs,
-                          'form': application_form,
-                      })
+        return render(
+            request, "schoolapp/landingpages/online_registration.html", {
+                'departments': departments,
+                'schools': schools,
+                'programs': programs,
+                'form': application_form,
+            })
 
 
 def updateonlineapplication(request, nrc_no):
     if request.method == 'POST':
         application = Admission.objects.get(nrc_no=nrc_no)
-        form = UpdateOnlineApplicationForm(request.POST, request.FILES, instance=application)
+        form = UpdateOnlineApplicationForm(request.POST,
+                                           request.FILES,
+                                           instance=application)
         print('INSIDE POST')
         print(form.errors)
         if form.is_valid():
@@ -292,14 +317,15 @@ def updateonlineapplication(request, nrc_no):
 
             # pre-populate the form with an existing band
             # return redirect('templogintocheckapplicationstatus')
-            return render(request, 'schoolapp/landingpages/checkapplicationstatus.html',
-                          {
-                              'application_detail': application,
-                              'nrc_no': nrc_no
-                          })
+            return render(
+                request, 'schoolapp/landingpages/checkapplicationstatus.html',
+                {
+                    'application_detail': application,
+                    'nrc_no': nrc_no
+                })
         else:
-            return render(request, 'schoolapp/landingpages/update_application.html',
-                          {
+            return render(request,
+                          'schoolapp/landingpages/update_application.html', {
                               'form': form,
                               'application_detail': application,
                               'nrc_no': nrc_no
@@ -307,11 +333,10 @@ def updateonlineapplication(request, nrc_no):
 
     application = Admission.objects.get(nrc_no=nrc_no)
     form = UpdateOnlineApplicationForm(instance=application)
-    return render(request, 'schoolapp/landingpages/update_application.html',
-                  {
-                      'form': form,
-                      'application': application,
-                  })
+    return render(request, 'schoolapp/landingpages/update_application.html', {
+        'form': form,
+        'application': application,
+    })
 
 
 def departments(request):
@@ -320,11 +345,10 @@ def departments(request):
 
     # Get list of schools
     schools = School.objects.all()
-    return render(request, "schoolapp/systempages/departments.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                  })
+    return render(request, "schoolapp/systempages/departments.html", {
+        'departments': departments,
+        'schools': schools,
+    })
 
 
 def add_department(request):
@@ -339,20 +363,18 @@ def add_department(request):
             add_department_form.save()
             # return redirect('departments')
             departments = Department.objects.all()
-            return render(request, 'schoolapp/systempages/departments.html',
-                          {
-                              'departments': departments,
-                          })
+            return render(request, 'schoolapp/systempages/departments.html', {
+                'departments': departments,
+            })
 
         else:
             return render(request, 'schoolapp/systempages/add-department.html',
                           {
                               'add_department_form': add_department_form,
                           })
-    return render(request, 'schoolapp/systempages/add-department.html',
-                  {
-                      'add_department_form': add_department_form,
-                  })
+    return render(request, 'schoolapp/systempages/add-department.html', {
+        'add_department_form': add_department_form,
+    })
 
 
 def school_details(request, school_id):
@@ -367,13 +389,13 @@ def school_details(request, school_id):
 
     # get a list of programs in that selected school
     programs = Program.objects.filter(program_school_id=school_id)
-    return render(request, "schoolapp/landingpages/programs_list.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                      'school': school,
-                      'programs': programs,
-                  })
+    return render(
+        request, "schoolapp/landingpages/programs_list.html", {
+            'departments': departments,
+            'schools': schools,
+            'school': school,
+            'programs': programs,
+        })
 
 
 def programs(request):
@@ -385,12 +407,11 @@ def programs(request):
 
     # Get list of programs
     programs = Program.objects.all()
-    return render(request, "schoolapp/landingpages/programs_list.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                      'programs': programs,
-                  })
+    return render(request, "schoolapp/landingpages/programs_list.html", {
+        'departments': departments,
+        'schools': schools,
+        'programs': programs,
+    })
 
 
 def program_details(request, program_id):
@@ -405,13 +426,13 @@ def program_details(request, program_id):
 
     # get a list of courses in that selected program
     courses = Course.objects.filter(course_program_id=program_id)
-    return render(request, "schoolapp/landingpages/courses_list.html",
-                  {
-                      'program': program,
-                      'courses': courses,
-                      'departments': departments,
-                      'schools': schools,
-                  })
+    return render(
+        request, "schoolapp/landingpages/courses_list.html", {
+            'program': program,
+            'courses': courses,
+            'departments': departments,
+            'schools': schools,
+        })
 
 
 def courses(request):
@@ -421,12 +442,11 @@ def courses(request):
     schools = School.objects.all()
     # Get list of courses
     courses = Course.objects.all()
-    return render(request, "schoolapp/landingpages/courses_list.html",
-                  {
-                      'departments': departments,
-                      'schools': schools,
-                      'courses': courses,
-                  })
+    return render(request, "schoolapp/landingpages/courses_list.html", {
+        'departments': departments,
+        'schools': schools,
+        'courses': courses,
+    })
 
 
 @login_required()
@@ -436,15 +456,18 @@ def admin_admissions_list(request):
 
     if request.user.user_group == 'Admissions Office':
         print('Admissions Office')
-        admissions = Admission.objects.filter(application_stage='Admissions Office')
+        admissions = Admission.objects.filter(
+            application_stage='Admissions Office')
 
     elif request.user.user_group == 'Accounts Office':
         print('Accounts Office')
-        admissions = Admission.objects.filter(application_stage='Accounts Office')
+        admissions = Admission.objects.filter(
+            application_stage='Accounts Office')
 
     elif request.user.user_group == 'Dean Of Students Affairs Office':
         print('Dean Of Students Affairs Office')
-        admissions = Admission.objects.filter(application_stage='Dean Of Students Affairs Office')
+        admissions = Admission.objects.filter(
+            application_stage='Dean Of Students Affairs Office')
 
     elif request.user.user_group == 'ICT Office':
         print('ICT Office')
@@ -452,11 +475,14 @@ def admin_admissions_list(request):
 
     elif request.user.user_group == 'Program Coordinator or Principal Lecturer Office':
         print('Program Coordinator or Principal Lecturer Office')
-        admissions = Admission.objects.filter(application_stage='Program Coordinator or Principal Lecturer Office')
+        admissions = Admission.objects.filter(
+            application_stage='Program Coordinator or Principal Lecturer Office'
+        )
 
     elif request.user.user_group == 'Registrar Office':
         print('Registrar Office')
-        admissions = Admission.objects.filter(application_stage='Registrar Office')
+        admissions = Admission.objects.filter(
+            application_stage='Registrar Office')
 
     elif request.user.is_staff or request.user.is_superuser:
         print('Super User')
@@ -475,21 +501,23 @@ def admin_admissions_detail(request, admission_id):
     print('INSIDE ADMIN ADMISSIONS DETAIL')
     if request.method == 'POST':
         print('INSIDE POST')
-        online_admission_form = OnlineAdmissionForm(request.POST, request.FILES)
+        online_admission_form = OnlineAdmissionForm(request.POST,
+                                                    request.FILES)
         if online_admission_form.is_valid():
             print('FORM VALID')
             online_admission_form.save()
 
             return HttpResponse('Approved!')
         else:
-            return render(request, 'schoolapp/systempages/admin_admissions_details.html',
-                          {'online_admission_form': online_admission_form})
+            return render(
+                request, 'schoolapp/systempages/admin_admissions_details.html',
+                {'online_admission_form': online_admission_form})
     online_admission_form = OnlineAdmissionForm()
-    return render(request, 'schoolapp/systempages/admin_admissions_details.html',
-                  {
-                      'admission_details': admission_details,
-                      'online_admission_form': online_admission_form,
-                  })
+    return render(
+        request, 'schoolapp/systempages/admin_admissions_details.html', {
+            'admission_details': admission_details,
+            'online_admission_form': online_admission_form,
+        })
 
 
 @login_required()
@@ -502,8 +530,10 @@ def admin_approve_application(request, admission_id):
             # print('INSIDE POST')
             # if the status picked is 'Verified'
             if request.POST['application_status'] == 'Verified':
-                admission_details.application_status = request.POST['application_status']
-                admission_details.admissions_office_comment = request.POST['admissions_office_comment']
+                admission_details.application_status = request.POST[
+                    'application_status']
+                admission_details.admissions_office_comment = request.POST[
+                    'admissions_office_comment']
                 admission_details.application_stage = 'Accounts Office'
                 admission_details.admissions_office = True
                 admission_details.admissions_office_user = request.user
@@ -516,8 +546,10 @@ def admin_approve_application(request, admission_id):
             # if the status picked by accounts is 'Verified'
             if request.POST['application_status'] == 'Verified':
                 # admission_details.balance_due = request.POST['balance_due']
-                admission_details.accounts_office_comment = request.POST['accounts_office_comment']
-                admission_details.application_status = request.POST['application_status']
+                admission_details.accounts_office_comment = request.POST[
+                    'accounts_office_comment']
+                admission_details.application_status = request.POST[
+                    'application_status']
                 admission_details.application_stage = 'Registrar Office'
                 admission_details.accounts_office = True
                 admission_details.accounts_office_user = request.user
@@ -526,8 +558,10 @@ def admin_approve_application(request, admission_id):
 
             if request.POST['application_status'] == 'Pending':
                 admission_details.balance_due = request.POST['balance_due']
-                admission_details.accounts_office_comment = request.POST['accounts_office_comment']
-                admission_details.application_status = request.POST['application_status']
+                admission_details.accounts_office_comment = request.POST[
+                    'accounts_office_comment']
+                admission_details.application_status = request.POST[
+                    'application_status']
                 admission_details.application_stage = 'Accounts Office'
                 admission_details.accounts_office = False
                 admission_details.accounts_office_user = request.user
@@ -566,8 +600,10 @@ def admin_approve_application(request, admission_id):
     if request.user.user_group == 'Registrar Office':
         if request.POST['application_status'] == 'Rejected':
             print('INSIDE POST')
-            admission_details.registrar_office_comment = request.POST['registrar_office_comment']
-            admission_details.application_status = request.POST['application_status']
+            admission_details.registrar_office_comment = request.POST[
+                'registrar_office_comment']
+            admission_details.application_status = request.POST[
+                'application_status']
             admission_details.application_stage = 'Registrar Office'
             admission_details.accounts_office = False
             admission_details.accounts_office_user = request.user
@@ -588,29 +624,37 @@ def admin_approve_application(request, admission_id):
             'We wish you the best of success in your academic endeavors. We encourage you to continue pursuit of your academic goals.\n\n' \
 
             'Sincerely,\n\n' \
-
             '' + request.user.get_full_name()
 
         from_email = 'chrispinkay@gmail.com'
 
         try:
             if request.POST['application_status'] == 'Rejected':
-                send_mail(subject, message, from_email, recipient_list=[admission_details.email, ],
+                send_mail(subject,
+                          message,
+                          from_email,
+                          recipient_list=[
+                              admission_details.email,
+                          ],
                           fail_silently=False)
 
         except socket.gaierror:
             print('NO INTERNET ACCESS')
-            return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            return HttpResponse(
+                'Check Your Internet Connection And Try Again. Email not sent')
         except ConnectionError:
             print('CONNECTION ERROR')
-            return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            return HttpResponse(
+                'Check Your Internet Connection And Try Again. Email not sent')
         except IntegrityError:
             return redirect('list_teacher')
 
     if request.POST['application_status'] == 'Approved':
         print('INSIDE POST')
-        admission_details.registrar_office_comment = request.POST['registrar_office_comment']
-        admission_details.application_status = request.POST['application_status']
+        admission_details.registrar_office_comment = request.POST[
+            'registrar_office_comment']
+        admission_details.application_status = request.POST[
+            'application_status']
         admission_details.application_stage = 'Registrar Office'
         admission_details.application_stage = 'Approved'
         admission_details.registrar_office = True
@@ -640,33 +684,44 @@ def admin_approve_application(request, admission_id):
 
         try:
             if request.POST['application_status'] == 'Approved':
-                send_mail(subject, message, from_email, recipient_list=[admission_details.email, ],
+                send_mail(subject,
+                          message,
+                          from_email,
+                          recipient_list=[
+                              admission_details.email,
+                          ],
                           fail_silently=False)
 
         except socket.gaierror:
             print('NO INTERNET ACCESS')
-            return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            return HttpResponse(
+                'Check Your Internet Connection And Try Again. Email not sent')
         except ConnectionError:
             print('CONNECTION ERROR')
-            return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            return HttpResponse(
+                'Check Your Internet Connection And Try Again. Email not sent')
         except IntegrityError:
             return redirect('list_teacher')
-
 
     # get all admissions
     global admissions
     if request.user.user_group == 'Admissions Office':
-        admissions = Admission.objects.filter(application_stage='Admissions Office')
+        admissions = Admission.objects.filter(
+            application_stage='Admissions Office')
     elif request.user.user_group == 'Accounts Office':
-        admissions = Admission.objects.filter(application_stage='Accounts Office')
+        admissions = Admission.objects.filter(
+            application_stage='Accounts Office')
     # elif request.user.user_group == 'Dean Of Students Affairs Office':
     #     admissions = Admission.objects.filter(application_stage='Dean Of Students Affairs Office')
     elif request.user.user_group == 'ICT Office':
         admissions = Admission.objects.filter(application_stage='ICT Office')
     elif request.user.user_group == 'Program Coordinator or Principal Lecturer Office':
-        admissions = Admission.objects.filter(application_stage='Program Coordinator or Principal Lecturer Office')
+        admissions = Admission.objects.filter(
+            application_stage='Program Coordinator or Principal Lecturer Office'
+        )
     elif request.user.user_group == 'Registrar Office':
-        admissions = Admission.objects.filter(application_stage='Registrar Office')
+        admissions = Admission.objects.filter(
+            application_stage='Registrar Office')
     print('STATUS: ', status)
     message = 'Application Successfully Verified!'
     if request.user.user_group == 'Registrar Office':
@@ -681,7 +736,9 @@ def admin_approve_application(request, admission_id):
 # lists teachers
 @login_required()
 def list_teacher(request):
-    teachers = User.objects.filter(is_active=True, is_staff=True, is_member_of_staff=True)
+    teachers = User.objects.filter(is_active=True,
+                                   is_staff=True,
+                                   is_member_of_staff=True)
     return render(request, 'schoolapp/systempages/teachers.html', {
         'teachers': teachers,
     })
@@ -700,7 +757,8 @@ def add_teacher(request):
             result_str = ''.join(random.choice(letters) for i in range(5))
 
             form = add_teacher_form.save(commit=False)
-            print('USERNAME: ', add_teacher_form.cleaned_data.get('first_name'))
+            print('USERNAME: ',
+                  add_teacher_form.cleaned_data.get('first_name'))
             f_name = add_teacher_form.cleaned_data.get('first_name')
             form.username = request.POST.get('first_name')
             form.is_member_of_staff = True
@@ -726,30 +784,41 @@ def add_teacher(request):
             from_email = 'chrispinkay@gmail.com'
 
             try:
-                send_mail(subject, message, from_email, recipient_list=[add_teacher_form.cleaned_data.get('email'), ],
+                send_mail(subject,
+                          message,
+                          from_email,
+                          recipient_list=[
+                              add_teacher_form.cleaned_data.get('email'),
+                          ],
                           fail_silently=False)
 
             except socket.gaierror:
                 print('NO INTERNET ACCESS')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+                return HttpResponse(
+                    'Check Your Internet Connection And Try Again. Email not sent'
+                )
             except ConnectionError:
                 print('CONNECTION ERROR')
-                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+                return HttpResponse(
+                    'Check Your Internet Connection And Try Again. Email not sent'
+                )
             except IntegrityError:
                 return redirect('list_teacher')
 
             teachers = User.objects.filter(is_member_of_staff=True)
-            return render(request, 'schoolapp/systempages/teachers.html', {
-                'add_teacher_form': add_teacher_form,
-                'success_message': 'Lecturer Added Successfully',
-                'teachers': teachers
-            })
+            return render(
+                request, 'schoolapp/systempages/teachers.html', {
+                    'add_teacher_form': add_teacher_form,
+                    'success_message': 'Lecturer Added Successfully',
+                    'teachers': teachers
+                })
 
     add_teacher_form = AddTeacherForm()
-    return render(request, 'schoolapp/systempages/add-teacher.html', {
-        'add_teacher_form': add_teacher_form,
-        'error_message': 'Lecturer Not Added'
-    })
+    return render(
+        request, 'schoolapp/systempages/add-teacher.html', {
+            'add_teacher_form': add_teacher_form,
+            'error_message': 'Lecturer Not Added'
+        })
 
 
 # lists teachers
@@ -783,14 +852,16 @@ def add_school(request):
             result_str = ''.join(random.choice(letters) for i in range(5))
 
             add_school_form.save()
-            print('SCHOOL NAME: ', add_school_form.cleaned_data.get('school_name'))
+            print('SCHOOL NAME: ',
+                  add_school_form.cleaned_data.get('school_name'))
 
             schools = School.objects.all()
-            return render(request, 'schoolapp/systempages/edit_school.html', {
-                'add_school_form': add_school_form,
-                'success_message': 'School Added Successfully',
-                'schools': schools
-            })
+            return render(
+                request, 'schoolapp/systempages/edit_school.html', {
+                    'add_school_form': add_school_form,
+                    'success_message': 'School Added Successfully',
+                    'schools': schools
+                })
 
     add_school_form = AddSchoolForm()
     return render(request, 'schoolapp/systempages/add-teacher.html', {
@@ -805,6 +876,7 @@ def list_schools(request):
     return render(request, 'schoolapp/systempages/schools.html', {
         'schools': schools,
     })
+
 
 # add teacher
 # @login_required()
@@ -838,31 +910,45 @@ def list_schools(request):
 def application_report(request, id):
     application_details = Admission.objects.get(id=id)
     sales = [
-        {"item": "Keyboard", "amount": "$120,00"},
-        {"item": "Mouse", "amount": "$10,00"},
-        {"item": "House", "amount": "$1 000 000,00"},
+        {
+            "item": "Keyboard",
+            "amount": "$120,00"
+        },
+        {
+            "item": "Mouse",
+            "amount": "$10,00"
+        },
+        {
+            "item": "House",
+            "amount": "$1 000 000,00"
+        },
     ]
     pdf = FPDF('P', 'mm', 'A4')
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
     pdf.cell(40, 5, 'WOODLANDS UNIVERSITY COLLEGE', 0, 1)
     pdf.set_font('Arial', '', 13)
-    pdf.cell(40, 5, 'Ibex Hill 2457 Main Street',0,1)
+    pdf.cell(40, 5, 'Ibex Hill 2457 Main Street', 0, 1)
     pdf.set_font('Arial', '', 13)
-    pdf.cell(40, 5, 'Lusaka',0,1)
-    pdf.cell(40, 5, 'E-mail: woodlandsuniversity@wuc.uni',0,1)
-    pdf.cell(40, 12, 'CALL: 0966186239',0,1)
+    pdf.cell(40, 5, 'Lusaka', 0, 1)
+    pdf.cell(40, 5, 'E-mail: woodlandsuniversity@wuc.uni', 0, 1)
+    pdf.cell(40, 12, 'CALL: 0966186239', 0, 1)
     pdf.set_font('Times', 'B', 15)
-    pdf.cell(40, 5, 'Personal Particulars',0,1)
+    pdf.cell(40, 5, 'Personal Particulars', 0, 1)
     pdf.set_font('courier', '', 12)
-    pdf.cell(200, 8, f"{'Full Name'.ljust(30)} {'Student Number'.ljust(20)}", 0, 1)
-    pdf.cell(200, 8,
-             f"{application_details.first_name + ' ' + application_details.other_names + ' ' + application_details.last_name + ' '.ljust(30)} {'Student Number'.ljust(20)}",
+    pdf.cell(200, 8, f"{'Full Name'.ljust(30)} {'Student Number'.ljust(20)}",
              0, 1)
+    pdf.cell(
+        200, 8,
+        f"{application_details.first_name + ' ' + application_details.other_names + ' ' + application_details.last_name + ' '.ljust(30)} {'Student Number'.ljust(20)}",
+        0, 1)
     # pdf.cell(200, 8, f"{application_details.first_name.ljust(30)} {'Student Number'.ljust(20)}", 0, 1)
     # pdf.line(10, 30, 150, 30)
     # pdf.line(10, 38, 150, 38)
     for line in sales:
-        pdf.cell(200, 8, f"{line['item'].ljust(30)} {line['amount'].rjust(20)}", 0, 1)
+        pdf.cell(200, 8,
+                 f"{line['item'].ljust(30)} {line['amount'].rjust(20)}", 0, 1)
     pdf.output('Wuc Application Form.pdf', 'F')
-    return FileResponse(open('Wuc Application Form.pdf', 'rb'), as_attachment=True, content_type='application/pdf')
+    return FileResponse(open('Wuc Application Form.pdf', 'rb'),
+                        as_attachment=True,
+                        content_type='application/pdf')
