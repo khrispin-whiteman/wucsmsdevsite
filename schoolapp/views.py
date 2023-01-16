@@ -87,12 +87,53 @@ def dashboard(request):
     })
 
 
+# Lecturer's Dashboard Start
 def lecturer(request):
     departments = Department.objects.all()
     # Get list of schools
     schools = School.objects.all()
 
     return render(request, 'schoolapp/lecturers_dashboard/index.html')
+
+
+def lecturers_modules(request):
+    departments = Department.objects.all()
+    # Get list of schools
+    schools = School.objects.all()
+
+    return render(request, 'schoolapp/lecturers_dashboard/modules.html')
+
+
+def edit_modules(request):
+    departments = Department.objects.all()
+    # Get list of schools
+    schools = School.objects.all()
+
+    return render(request, 'schoolapp/lecturers_dashboard/edit_module.html')
+
+
+def add_modules(request):
+    departments = Department.objects.all()
+    # Get list of schools
+    schools = School.objects.all()
+
+    return render(request, 'schoolapp/lecturers_dashboard/add_module.html')
+
+
+def lecturers_students(request):
+    return render(request, 'schoolapp/lecturers_dashboard/students.html')
+
+
+def lecturers_students_results(request):
+    return render(request, 'schoolapp/lecturers_dashboard/edit_students.html')
+
+
+def lecturers_students_details(request):
+    return render(request,
+                  'schoolapp/lecturers_dashboard/student_details.html')
+
+
+# End Lecture's Dashboard
 
 
 def testtemplate(request):
