@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
 from schoolapp.models import Semester, Course, Session, Level, User, School, Program, Department, ProgramType, Student, \
-    Admission, StudentNumber, SystemSettings
+    Admission, StudentNumber, SystemSettings, Payment, PaymentType, PaymentStructure
 
 
 # Register your models here.
@@ -108,7 +108,32 @@ class AdmissionAdmin(ImportExportModelAdmin):
     list_display = ('id', 'first_name', 'last_name', 'nrc_no', 'phone_number', 'email', 'gender', 'program_applied_for')
     list_display_links = ('id', 'first_name', 'last_name', 'nrc_no', 'phone_number', 'email', 'gender', 'program_applied_for')
     list_per_page = 10
-    search_fields = ('first_name', 'last_name', 'nrc_no', 'phone_number', 'email', 'gender', 'program_applied_for')
+    search_fields = ('first_name', 'last_name', 'nrc_no', 'phone_number', 'student_number__full_student_no', 'email', 'gender', 'program_applied_for__program_name')
+
+
+#  accounts modules
+class PaymentTypeAdmin(ImportExportModelAdmin):
+    list_display = ('payment_type_name',)
+    list_display_links = ('payment_type_name',)
+    list_per_page = 10
+    search_fields = ('payment_type_name',)
+
+
+class PaymentStructureAdmin(ImportExportModelAdmin):
+    list_display = ('payment_level', 'amount_to_be_paid', 'payment_description')
+    list_display_links = ('payment_level', 'amount_to_be_paid', 'payment_description')
+    list_per_page = 10
+    search_fields = ('payment_level__level', 'amount_to_be_paid', 'payment_description__payment_type_name',)
+
+
+class PaymentAdmin(ImportExportModelAdmin):
+    list_display = ('student', 'amountpaid', 'actualamountpaid', 'paymentstructure', 'balance', 'total_amount_to_be_paid', 'semester', 'paymentstatus', 'paymentdate')
+    list_display_links = ('student', 'amountpaid', 'actualamountpaid', 'paymentstructure', 'balance', 'total_amount_to_be_paid', 'semester', 'paymentstatus', 'paymentdate')
+    list_per_page = 10
+    search_fields = ('student__user__username', 'amountpaid', 'actualamountpaid', 'paymentstructure__amount_to_be_paid', 'balance', 'total_amount_to_be_paid', 'paymentstatus', 'paymentdate')
+    date_hierarchy = 'paymentdate'
+    list_filter = ('semester', )
+
 
 
 admin.site.register(Session, SessionAdmin)
@@ -124,3 +149,6 @@ admin.site.register(Student, StudentAdmin)
 admin.site.register(Admission, AdmissionAdmin)
 admin.site.register(StudentNumber, StudentNumberAdmin)
 admin.site.register(SystemSettings, SystemSettingsAdmin)
+admin.site.register(PaymentType, PaymentTypeAdmin)
+admin.site.register(PaymentStructure, PaymentStructureAdmin)
+admin.site.register(Payment, PaymentAdmin)

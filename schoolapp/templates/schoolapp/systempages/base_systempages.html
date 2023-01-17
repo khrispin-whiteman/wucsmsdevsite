@@ -161,7 +161,7 @@
                             {#                           <p class="text-muted mb-0">Administrator</p>#}
                         </div>
                     </div>
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
+                    <a class="dropdown-item" href="{% url 'profile' %}">My Profile</a>
                     <a class="dropdown-item" href="inbox.html">Inbox</a>
                     <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 </div>
@@ -180,102 +180,106 @@
                     <li><a href="{% url 'dashboard' %}" class="active"><i class="fas fa-chart-bar"></i>
                         <span>Dashboard</span></a></li>
                     </li>
-                    {% if perms.schoolapp.view_user or perms.schoolapp.change_user %}
+
+                    {% if request.user.is_student %}
+                        <li><a href="" class=""><i class="fa fa-"></i>
+                            <span>Payment History</span></a></li>
+                        </li>
+                        <li><a href="" class=""><i class="fas fa-book"></i>
+                            <span>View Results</span></a></li>
+                        </li>
+                    {% endif %}
+
+                    {% if request.user.is_superuser or request.user.user_group == 'Lecturer' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
                         <li class="submenu">
                             <a href="#"><i class="fas fa-user-graduate"></i> <span>Students</span> <span
                                     class="menu-arrow"></span></a>
                             <ul>
                                 <li><a href="{% url 'list_students' %}">Student List</a></li>
-                                <li><a href="#">Student Add</a></li>
+
+                                <li><a href="{% url 'add_student' %}">Student Add</a></li>
 
                             </ul>
                         </li>
                     {% endif %}
 
-{#                    {{ perms.schoolapp }}#}
-                    <li class="submenu">
-                        <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span>Staff</span> <span
-                                class="menu-arrow"></span></a>
-                        <ul>
-                            <li><a href="{% url 'list_teacher' %}">Staff List</a></li>
-                            <li><a href="{% url 'add_teacher' %}">Staff Add</a></li>
+                    {% if request.user.is_superuser or request.user.user_group == 'ICT Office' or request.user.user_group == 'Admissions Office' %}
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span>Staff</span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'list_teacher' %}">Staff List</a></li>
+                                <li><a href="{% url 'add_teacher' %}">Staff Add</a></li>
 
-                        </ul>
-                    </li>
-                    <li class="submenu">
-                        <a href="#"><i class="fas fa-building"></i> <span> Departments</span> <span
-                                class="menu-arrow"></span></a>
-                        <ul>
-                            <li><a href="{% url 'departments' %}">Department List</a></li>
-                            <li><a href="{% url 'add_department' %}">Department Add</a></li>
-                        </ul>
-                    </li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-building"></i> <span> Departments</span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'departments' %}">Department List</a></li>
+                                <li><a href="{% url 'add_department' %}">Department Add</a></li>
+                            </ul>
+                        </li>
+
                     <li class="submenu">
                         <a href="#"><i class="fas fa-building"></i> <span>Schools</span> <span
                                 class="menu-arrow"></span></a>
                         <ul>
                             <li><a href="{% url 'list_schools' %}">School List</a></li>
-                            <li><a href="add-department.html">School Add</a></li>
+                            <li><a href="{% url 'add_school' %}">School Add</a></li>
                         </ul>
                     </li>
                     <li class="submenu">
                         <a href="#"><i class="fas fa-book-reader"></i> <span> Programs</span> <span
                                 class="menu-arrow"></span></a>
                         <ul>
-                            <li><a href="{% url 'programs' %}">Programs List</a></li>
-                            <li><a href="#">Program Add</a></li>
+                            <li><a href="{% url 'admin_list_programs' %}">Programs List</a></li>
+{#                            <li><a href="#">Program Add</a></li>#}
                         </ul>
                     </li>
-                    <li class="submenu">
-                        <a href="#"><i class="fas fa-book-reader"></i> <span> Courses</span> <span
-                                class="menu-arrow"></span></a>
-                        <ul>
-                            <li><a href="#">Courses List</a></li>
-                            <li><a href="#">Course Add</a></li>
-                        </ul>
-                    </li>
-                    <li class="menu-title">
-                        <span>Management</span>
-                    </li>
-                    <li>
-                        <a href="{% url 'admin_admissions_list' %}"><i class="fas fa-holly-berry"></i> <span>Applications</span></a>
-                    </li>
-                    <li class="submenu">
-                        <a href="#"><i class="fas fa-file-invoice-dollar"></i> <span> Accounts</span> <span
-                                class="menu-arrow"></span></a>
-                        <ul>
-                            <li><a href="#">Fees Collection</a></li>
-                            <li><a href="#">Expenses</a></li>
-                            <li><a href="#">Salary</a></li>
-                            <li><a href="#">Add Fees</a></li>
-                            <li><a href="#">Add Expenses</a></li>
-                            <li><a href="#">Add Salary</a></li>
-                        </ul>
-                    </li>
-                <li class="submenu">
-                        <a href="#"><i class="fas fa-file-invoice-dollar"></i> <span> School Calendars</span> <span
-                                class="menu-arrow"></span></a>
-                        <ul>
-                            <li><a href="#">Exam List</a></li>
-                            <li><a href="#">Events</a></li>
-                            <li><a href="#">Class Timetable</a></li>
-                        </ul>
-                    </li>
+{#                    <li class="submenu">#}
+{#                        <a href="#"><i class="fas fa-book-reader"></i> <span> Courses</span> <span#}
+{#                                class="menu-arrow"></span></a>#}
+{#                        <ul>#}
+{#                            <li><a href="#">Courses List</a></li>#}
+{#                            <li><a href="#">Course Add</a></li>#}
+{#                        </ul>#}
+{#                    </li>#}
+                    {% endif %}
+                    {% if request.user.user_group == 'Lecturer' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
 
-                    <li>
-                        <a href="#"><i class="fas fa-comment-dollar"></i> <span>Fees</span></a>
-                    </li>
+                        <li class="menu-title">
+                            <span>Management</span>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_admissions_list' %}"><i class="fas fa-holly-berry"></i> <span>Applications</span></a>
+                        </li>
+                    {% endif %}
 
-                    <li>
-                        <a href="#"><i class="fas fa-book"></i> <span>Library</span></a>
-                    </li>
+                    {% if request.user.user_group == 'Accounts Office' %}
+                        <li class="submenu">
+                            <a href="#"><i class="fas fa-file-invoice-dollar"></i> <span> Accounts</span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul>
+                                <li><a href="{% url 'payment_types_list' %}">Payment Types</a></li>
+                                <li><a href="{% url 'payment_structures_list' %}">Payment Structures</a></li>
+                                <li><a href="{% url 'payment_collections_list' %}">Payments Collection</a></li>
+                                <li><a href="{% url 'payment_collect' %}">Collect Payment</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
 
-                    <li>
-                        <a href="hostel.html"><i class="fas fa-hotel"></i> <span>Hostel</span></a>
-                    </li>
-                    <li>
-                        <a href="transport.html"><i class="fas fa-bus"></i> <span>Transport</span></a>
-                    </li>
+{#                    <li class="submenu">#}
+{#                        <a href="#"><i class="fas fa-file-invoice-dollar"></i> <span> School Calendars</span> <span#}
+{#                                class="menu-arrow"></span></a>#}
+{#                        <ul>#}
+{#                            <li><a href="#">Exam List</a></li>#}
+{#                            <li><a href="#">Events</a></li>#}
+{#                            <li><a href="#">Class Timetable</a></li>#}
+{#                        </ul>#}
+{#                    </li>#}
+
 
                 </ul>
             </div>
@@ -658,385 +662,360 @@
 
         $('#table_feecollection_list').append('<caption style="caption-side: top"; h2> Payments Report</caption>')
     });
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_feestructures_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_librarian_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_parent_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_sessions_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_semesters_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2, 3]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_book_genre_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_book_language_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1,]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
-    {##}
-    {#$(document).ready(function () {#}
-    {#    $('#table_borrowers_list').DataTable({#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            {#}
-    {#                extend: 'copy',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'csv',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {#            {#}
-    {#                extend: 'excel',#}
-    {#                footer: true,#}
-    {#                alignment: "center",#}
-    {#                exportOptions: {#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#            {#}
-    {#                extend: 'print',#}
-    {#                footer: true,#}
-    {#                exportOptions: {#}
-    {#                    alignment: "center",#}
-    {#                    columns: [1, 2, 3, 4, 5, 6]#}
-    {#                }#}
-    {#            },#}
-    {##}
-    {#        ],#}
-    {#    });#}
-    {#});#}
 
-    $(document).ready(function () {
-        $('#table_test').DataTable({
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'copy',
-                    footer: true,
-                    alignment: "center",
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
-                    }
-                },
-                {
-                    extend: 'csv',
-                    footer: true,
-                    alignment: "center",
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
-                    }
-                },
-                {
-                    extend: 'excel',
-                    footer: true,
-                    alignment: "center",
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
-                    }
-                },
+        ;
+        #}
+        {##}
+        {##}
+        {#$(document).ready(function () {#}
+        {#    $('#table_librarian_list').DataTable({#}
+        {#        dom: 'Bfrtip',#}
+        {#        buttons: [#}
+        {#            {#}
+        {#                extend: 'copy',#}
+        {#                footer: true,#}
+        {#                alignment: "center",#}
+        {#                exportOptions: {#}
+        {#                    columns: [1, 2, 3, 4, 5, 6]#}
+        {#                }#}
+        {#            },#}
+        {#            {#}
+        {#                extend: 'csv',#}
+        {#                footer: true,#}
+        {#                alignment: "center",#}
+        {#                exportOptions: {#}
+        {#                    columns: [1, 2, 3, 4, 5, 6]#}
+        {#                }#}
+        {#            },#}
+        {#            {#}
+        {#                extend: 'excel',#}
+        {#                footer: true,#}
+        {#                alignment: "center",#}
+        {#                exportOptions: {#}
+        {#                    columns: [1, 2, 3, 4, 5, 6]#}
+        {#                }#}
+        {#            },#}
+        {##}
+        {#            {#}
+        {#                extend: 'print',#}
+        {#                footer: true,#}
+        {#                exportOptions: {#}
+        {#                    alignment: "center",#}
+        {#                    columns: [1, 2, 3, 4, 5, 6]#}
+        {#                }#}
+        {#            },#}
+        {##}
+        {#        ],#}
+        {#    });#}
+        {#})
+            ;
+            #}
+            {##}
+            {#$(document).ready(function () {#}
+            {#    $('#table_parent_list').DataTable({#}
+            {#        dom: 'Bfrtip',#}
+            {#        buttons: [#}
+            {#            {#}
+            {#                extend: 'copy',#}
+            {#                footer: true,#}
+            {#                alignment: "center",#}
+            {#                exportOptions: {#}
+            {#                    columns: [1, 2, 3, 4, 5, 6]#}
+            {#                }#}
+            {#            },#}
+            {#            {#}
+            {#                extend: 'csv',#}
+            {#                footer: true,#}
+            {#                alignment: "center",#}
+            {#                exportOptions: {#}
+            {#                    columns: [1, 2, 3, 4, 5, 6]#}
+            {#                }#}
+            {#            },#}
+            {#            {#}
+            {#                extend: 'excel',#}
+            {#                footer: true,#}
+            {#                alignment: "center",#}
+            {#                exportOptions: {#}
+            {#                    columns: [1, 2, 3, 4, 5, 6]#}
+            {#                }#}
+            {#            },#}
+            {##}
+            {#            {#}
+            {#                extend: 'print',#}
+            {#                footer: true,#}
+            {#                exportOptions: {#}
+            {#                    alignment: "center",#}
+            {#                    columns: [1, 2, 3, 4, 5, 6]#}
+            {#                }#}
+            {#            },#}
+            {##}
+            {#        ],#}
+            {#    });#}
+            {#})
+                ;
+                #}
+                {##}
+                {#$(document).ready(function () {#}
+                {#    $('#table_sessions_list').DataTable({#}
+                {#        dom: 'Bfrtip',#}
+                {#        buttons: [#}
+                {#            {#}
+                {#                extend: 'copy',#}
+                {#                footer: true,#}
+                {#                alignment: "center",#}
+                {#                exportOptions: {#}
+                {#                    columns: [1, 2,]#}
+                {#                }#}
+                {#            },#}
+                {#            {#}
+                {#                extend: 'csv',#}
+                {#                footer: true,#}
+                {#                alignment: "center",#}
+                {#                exportOptions: {#}
+                {#                    columns: [1, 2,]#}
+                {#                }#}
+                {#            },#}
+                {#            {#}
+                {#                extend: 'excel',#}
+                {#                footer: true,#}
+                {#                alignment: "center",#}
+                {#                exportOptions: {#}
+                {#                    columns: [1, 2,]#}
+                {#                }#}
+                {#            },#}
+                {##}
+                {#            {#}
+                {#                extend: 'print',#}
+                {#                footer: true,#}
+                {#                exportOptions: {#}
+                {#                    alignment: "center",#}
+                {#                    columns: [1, 2,]#}
+                {#                }#}
+                {#            },#}
+                {##}
+                {#        ],#}
+                {#    });#}
+                {#})
+                    ;
+                    #}
+                    {##}
+                    {#$(document).ready(function () {#}
+                    {#    $('#table_semesters_list').DataTable({#}
+                    {#        dom: 'Bfrtip',#}
+                    {#        buttons: [#}
+                    {#            {#}
+                    {#                extend: 'copy',#}
+                    {#                footer: true,#}
+                    {#                alignment: "center",#}
+                    {#                exportOptions: {#}
+                    {#                    columns: [1, 2, 3]#}
+                    {#                }#}
+                    {#            },#}
+                    {#            {#}
+                    {#                extend: 'csv',#}
+                    {#                footer: true,#}
+                    {#                alignment: "center",#}
+                    {#                exportOptions: {#}
+                    {#                    columns: [1, 2, 3]#}
+                    {#                }#}
+                    {#            },#}
+                    {#            {#}
+                    {#                extend: 'excel',#}
+                    {#                footer: true,#}
+                    {#                alignment: "center",#}
+                    {#                exportOptions: {#}
+                    {#                    columns: [1, 2, 3]#}
+                    {#                }#}
+                    {#            },#}
+                    {##}
+                    {#            {#}
+                    {#                extend: 'print',#}
+                    {#                footer: true,#}
+                    {#                exportOptions: {#}
+                    {#                    alignment: "center",#}
+                    {#                    columns: [1, 2, 3]#}
+                    {#                }#}
+                    {#            },#}
+                    {##}
+                    {#        ],#}
+                    {#    });#}
+                    {#})
+                        ;
+                        #}
+                        {##}
+                        {#$(document).ready(function () {#}
+                        {#    $('#table_book_genre_list').DataTable({#}
+                        {#        dom: 'Bfrtip',#}
+                        {#        buttons: [#}
+                        {#            {#}
+                        {#                extend: 'copy',#}
+                        {#                footer: true,#}
+                        {#                alignment: "center",#}
+                        {#                exportOptions: {#}
+                        {#                    columns: [1,]#}
+                        {#                }#}
+                        {#            },#}
+                        {#            {#}
+                        {#                extend: 'csv',#}
+                        {#                footer: true,#}
+                        {#                alignment: "center",#}
+                        {#                exportOptions: {#}
+                        {#                    columns: [1,]#}
+                        {#                }#}
+                        {#            },#}
+                        {#            {#}
+                        {#                extend: 'excel',#}
+                        {#                footer: true,#}
+                        {#                alignment: "center",#}
+                        {#                exportOptions: {#}
+                        {#                    columns: [1,]#}
+                        {#                }#}
+                        {#            },#}
+                        {##}
+                        {#            {#}
+                        {#                extend: 'print',#}
+                        {#                footer: true,#}
+                        {#                exportOptions: {#}
+                        {#                    alignment: "center",#}
+                        {#                    columns: [1,]#}
+                        {#                }#}
+                        {#            },#}
+                        {##}
+                        {#        ],#}
+                        {#    });#}
+                        {#})
+                            ;
+                            #}
+                            {##}
+                            {#$(document).ready(function () {#}
+                            {#    $('#table_book_language_list').DataTable({#}
+                            {#        dom: 'Bfrtip',#}
+                            {#        buttons: [#}
+                            {#            {#}
+                            {#                extend: 'copy',#}
+                            {#                footer: true,#}
+                            {#                alignment: "center",#}
+                            {#                exportOptions: {#}
+                            {#                    columns: [1,]#}
+                            {#                }#}
+                            {#            },#}
+                            {#            {#}
+                            {#                extend: 'csv',#}
+                            {#                footer: true,#}
+                            {#                alignment: "center",#}
+                            {#                exportOptions: {#}
+                            {#                    columns: [1,]#}
+                            {#                }#}
+                            {#            },#}
+                            {#            {#}
+                            {#                extend: 'excel',#}
+                            {#                footer: true,#}
+                            {#                alignment: "center",#}
+                            {#                exportOptions: {#}
+                            {#                    columns: [1,]#}
+                            {#                }#}
+                            {#            },#}
+                            {##}
+                            {#            {#}
+                            {#                extend: 'print',#}
+                            {#                footer: true,#}
+                            {#                exportOptions: {#}
+                            {#                    alignment: "center",#}
+                            {#                    columns: [1,]#}
+                            {#                }#}
+                            {#            },#}
+                            {##}
+                            {#        ],#}
+                            {#    });#}
+                            {#})
+                                ;
+                                #}
+                                {##}
+                                {#$(document).ready(function () {#}
+                                {#    $('#table_borrowers_list').DataTable({#}
+                                {#        dom: 'Bfrtip',#}
+                                {#        buttons: [#}
+                                {#            {#}
+                                {#                extend: 'copy',#}
+                                {#                footer: true,#}
+                                {#                alignment: "center",#}
+                                {#                exportOptions: {#}
+                                {#                    columns: [1, 2, 3, 4, 5, 6]#}
+                                {#                }#}
+                                {#            },#}
+                                {#            {#}
+                                {#                extend: 'csv',#}
+                                {#                footer: true,#}
+                                {#                alignment: "center",#}
+                                {#                exportOptions: {#}
+                                {#                    columns: [1, 2, 3, 4, 5, 6]#}
+                                {#                }#}
+                                {#            },#}
+                                {#            {#}
+                                {#                extend: 'excel',#}
+                                {#                footer: true,#}
+                                {#                alignment: "center",#}
+                                {#                exportOptions: {#}
+                                {#                    columns: [1, 2, 3, 4, 5, 6]#}
+                                {#                }#}
+                                {#            },#}
+                                {##}
+                                {#            {#}
+                                {#                extend: 'print',#}
+                                {#                footer: true,#}
+                                {#                exportOptions: {#}
+                                {#                    alignment: "center",#}
+                                {#                    columns: [1, 2, 3, 4, 5, 6]#}
+                                {#                }#}
+                                {#            },#}
+                                {##}
+                                {#        ],#}
+                                {#    });#}
+                                {#})
+                                    ;
+                                    #}
 
-                {
-                    extend: 'print',
-                    footer: true,
-                    exportOptions: {
-                        alignment: "center",
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
-                    }
-                },
+                                    $(document).ready(function () {
+                                        $('#table_test').DataTable({
+                                            dom: 'Bfrtip',
+                                            buttons: [
+                                                {
+                                                    extend: 'copy',
+                                                    footer: true,
+                                                    alignment: "center",
+                                                    exportOptions: {
+                                                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
+                                                    }
+                                                },
+                                                {
+                                                    extend: 'csv',
+                                                    footer: true,
+                                                    alignment: "center",
+                                                    exportOptions: {
+                                                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
+                                                    }
+                                                },
+                                                {
+                                                    extend: 'excel',
+                                                    footer: true,
+                                                    alignment: "center",
+                                                    exportOptions: {
+                                                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
+                                                    }
+                                                },
 
-            ],
-        });
-    });
+                                                {
+                                                    extend: 'print',
+                                                    footer: true,
+                                                    exportOptions: {
+                                                        alignment: "center",
+                                                        columns: [1, 2, 3, 4, 5, 6, 7, 8,]
+                                                    }
+                                                },
+
+                                            ],
+                                        });
+                                    });
 
 </script>
 

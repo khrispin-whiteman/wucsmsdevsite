@@ -12,7 +12,7 @@
                 <div class="card-body">
                     <div class="list-group">
                      {% for course in courses %}
-                        <a href="" class="list-group-item list-group-item-action">{{ course.course_code }} - {{ course.course_name }}, {{ course.level }} Year</a>
+                        <a href="" class="list-group-item list-group-item-action">{{ course.course_code }} - {{ course.course_name }}, {{ course.level }}</a>
                         {% empty %}
                             <a href="#" class="list-group-item list-group-item-action"><i class="alert-warning">No Courses Found In Selected Program</i></a>
                      {% endfor %}

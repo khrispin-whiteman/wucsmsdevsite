@@ -11,7 +11,7 @@
                     <div class="col">
                         <h3 class="page-title">Add Department</h3>
                         <ul class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="departments.html">Department</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'departments' %}">Department</a></li>
                             <li class="breadcrumb-item active">Add Department</li>
                         </ul>
                     </div>
@@ -41,6 +41,13 @@
                                              <label>{{ add_department_form.department_description.label_tag }}</label>
                                             {{ add_department_form.department_description }}
                                             {{ add_department_form.department_description.error_messages }}
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6">
+                                        <div class="form-group">
+                                             <label>{{ add_department_form.hod.label_tag }}</label>
+                                            {{ add_department_form.hod }}
+                                            {{ add_department_form.hod.error_messages }}
                                         </div>
                                     </div>
 
