@@ -1,0 +1,111 @@
+{% extends 'schoolapp/systempages/base_systempages.html' %}
+
+{% block title %}Add Student{% endblock %}
+
+{% block content %}
+    <div class="main-wrapper">
+
+        <div class="page-wrapper">
+            <div class="content container-fluid">
+
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="page-title">Add Student</h3>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'list_students' %}">Student</a></li>
+                                <li class="breadcrumb-item active">Add Student</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            {% if error_message %}
+                                <div class="alert alert-danger">{{ error_message }}</div>
+                            {% endif %}
+                        <br>
+                            <div class="card-body">
+                                <form action="{% url 'add_student' %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="form-title"><span>Basic Details</span></h5>
+                                        </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.first_name.label_tag }}</label>
+                                                    {{ add_student_form.first_name }}
+                                                    {{ add_student_form.first_name.error_messages }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.last_name.label_tag }}</label>
+                                                    {{ add_student_form.last_name }}
+                                                    {{ add_student_form.last_name.error_messages }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.gender.label_tag }}</label>
+                                                    {{ add_student_form.gender }}
+                                                    {{ add_student_form.gender.error_messages }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.email.label_tag }}</label>
+                                                    {{ add_student_form.email }}
+                                                    {{ add_student_form.email.error_messages }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.phone.label_tag }}</label>
+                                                    {{ add_student_form.phone }}
+                                                    {{ add_student_form.phone.error_messages }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.level.label_tag }}</label>
+                                                    {{ add_student_form.level }}
+                                                    {{ add_student_form.level.error_messages }}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label>{{ add_student_form.program.label_tag }}</label>
+                                                    {{ add_student_form.program }}
+                                                    {{ add_student_form.program.error_messages }}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="student_number">Student Number:</label>
+                                                    <input type="text" placeholder="enter student number here" class="form-control" id="student_number" name="student_number">
+                                                    {% if error_message %}
+                                                        <i style="color: red">{{ error_message }}</i>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
