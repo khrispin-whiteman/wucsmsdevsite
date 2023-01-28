@@ -15,7 +15,17 @@ urlpatterns = [
     # system urls
     path('', views.index, name='index'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    
+     # Lectures starts
     path('lecturer/', views.lecturer, name='lecture'),
+    path('lecturer/modules', views.lecturers_modules),
+    path('lecturer/add_module', views.add_modules),
+    path('lecturer/edit_module', views.edit_modules),
+    path('lecturer/students', views.lecturers_students),
+    path('lecturer/student_details', views.lecturers_students_details),
+    path('lecturer/edit_student', views.lecturers_students_results),
+    # Lecture Ends
+
     path('departments/', views.departments, name='departments'),
     path('programs/', views.programs, name='programs'),
     path('programs/<int:program_id>/courses/',
