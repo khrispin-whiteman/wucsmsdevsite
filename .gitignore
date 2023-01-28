@@ -1,1 +1,6 @@
 shoolenv/
+school/*
+schoolapp/migrations/0001_initial.py
+schoolapp/__pycache__/views.cpython-310 2.pyc
+schoolapp/static/schoolapp/systempages/assets/
+.vscode/settings.json
