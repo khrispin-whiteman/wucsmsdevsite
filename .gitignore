@@ -143,3 +143,8 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+school/
+.vscode/
+.settings/
+.idea/
+schoolapp/__pycache__/
