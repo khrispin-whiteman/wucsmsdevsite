@@ -148,3 +148,5 @@ school/
 .settings/
 .idea/
 schoolapp/__pycache__/
+school/*
+school/lib/python3.10/site-packages/pip/_vendor/cachecontrol/__pycache__/controller.cpython-310.pyc
