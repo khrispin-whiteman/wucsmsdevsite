@@ -8,6 +8,15 @@ urlpatterns = [
     # path('generatestudentno/', views.generateStudentNumber, name='generateStudentNumber'),
     path('generatestudentnorandomly/', views.generateStudentNumberRandomDigits, name='generateStudentNumberRandomDigits'),
 
+  # Lectures starts
+    path('lecturer/', views.lecturer, name='lecture'),
+    path('lecturer/modules', views.lecturers_modules),
+    path('lecturer/add_module', views.add_modules),
+    path('lecturer/edit_module', views.edit_modules),
+    path('lecturer/students', views.lecturers_students),
+    path('lecturer/student_details', views.lecturers_students_details),
+    path('lecturer/edit_student', views.lecturers_students_results),
+    # Lecture Ends
     # system urls
     path('', views.index, name='index'),
     path('profile/', views.profile, name='profile'),
