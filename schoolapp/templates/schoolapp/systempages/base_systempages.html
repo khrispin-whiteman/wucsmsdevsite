@@ -190,15 +190,17 @@
                         </li>
                     {% endif %}
 
-                    {% if request.user.is_superuser or request.user.user_group == 'Lecturer' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
+                    {% if request.user.is_superuser or request.user.user_group == 'Lecturer' or request.user.user_group == 'Examinations Office' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
                         <li class="submenu">
                             <a href="#"><i class="fas fa-user-graduate"></i> <span>Students</span> <span
                                     class="menu-arrow"></span></a>
                             <ul>
-                                <li><a href="{% url 'list_students' %}">Student List</a></li>
-
-                                <li><a href="{% url 'add_student' %}">Student Add</a></li>
-
+                                <li><a href="{% url 'list_students' %}">List Students</a></li>
+                                <li><a href="{% url 'search_applicant_by_student_no' %}">Add Student</a></li>
+                                <li><a href="{% url 'admin_student_registration' %}">Register Student</a></li>
+                                {% if request.user.user_group == 'Examinations Office' %}
+                                    <li><a href="{% url 'add_score' %}">Manage Score</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                     {% endif %}
@@ -208,8 +210,8 @@
                             <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span>Staff</span> <span
                                     class="menu-arrow"></span></a>
                             <ul>
-                                <li><a href="{% url 'list_teacher' %}">Staff List</a></li>
-                                <li><a href="{% url 'add_teacher' %}">Staff Add</a></li>
+                                <li><a href="{% url 'list_staff' %}">Staff List</a></li>
+                                <li><a href="{% url 'add_staff' %}">Staff Add</a></li>
 
                             </ul>
                         </li>
@@ -247,7 +249,7 @@
 {#                        </ul>#}
 {#                    </li>#}
                     {% endif %}
-                    {% if request.user.user_group == 'Lecturer' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
+                    {% if request.user.is_superuser or request.user.user_group == 'Lecturer' or request.user.user_group == 'Admissions Office' or request.user.user_group == 'Registrar Office' or request.user.user_group == 'Program Coordinator or Principal Lecturer Office' or request.user.user_group == 'ICT Office' or request.user.user_group == 'Accounts Office' or request.user.user_group == 'Dean Of Students Affairs Office' %}
 
                         <li class="menu-title">
                             <span>Management</span>

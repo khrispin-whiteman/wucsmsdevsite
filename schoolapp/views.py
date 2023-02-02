@@ -6,8 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Max
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from schoolapp.models import User, Department, School, Program, Course, StudentNumber, SystemSettings, Admission, \
@@ -15,8 +16,8 @@ from schoolapp.models import User, Department, School, Program, Course, StudentN
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from .forms import OnlineAdmissionForm, AddTeacherForm, AddSchoolForm, AddDepartmentForm, UpdateOnlineApplicationForm, \
-    AddStudentForm, PaymentCollectForm, AddPaymentTypeForm, AddPaymentStructureForm
+from .forms import OnlineAdmissionForm, AddStaffForm, AddSchoolForm, AddDepartmentForm, UpdateOnlineApplicationForm, \
+    AddStudentForm, PaymentCollectForm, AddPaymentTypeForm, AddPaymentStructureForm, AdminOnlineAdmissionForm
 from .serializers import ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -223,13 +224,13 @@ def online_admission(request):
                 application_form.cleaned_data.get('program_applied_for')) + \
                       ' has been successfully submitted, you will be notified once it has been reviewed by the school' \
                       ' administration. You can check the status of your application via this link https://wucsmstest.pythonanywhere.com/application-status/ \n' \
-                      'You will be required to provide your Student Number and the temporal system gerated password.\n\n' \
+                      'You will be required to provide your Student Number and the temporal system generated password.\n\n' \
                       'STUDENT NO.: ' + sn_obj.full_student_no + '\n' \
-                                                                 'PASSWORD: ' + tmp_password + '\n' \
-                                                                                               'LINK: https://wucsmstest.pythonanywhere.com/application-status/\n\n' \
-                                                                                               'Keep the information above safe or you will be unable to see your application status.\n\n' \
-                                                                                               'You can go back and make changes to your application details before close of application,\n' \
-                                                                                               'For more information, contact the academic office on: 0900000000 or 0700000000'
+                      'PASSWORD: ' + tmp_password + '\n' \
+                       'LINK: https://wucsmstest.pythonanywhere.com/application-status/\n\n' \
+                       'Keep the information above safe or you will be unable to see your application status.\n\n' \
+                       'You can go back and make changes to your application details before close of application,\n' \
+                       'For more information, contact the academic office on: 0900000000 or 0700000000'
 
             from_email = 'chrispinkay@gmail.com'
             try:
@@ -694,28 +695,28 @@ def admin_approve_application(request, admission_id):
 
 # lists teachers
 @login_required()
-def list_teacher(request):
-    teachers = User.objects.filter(is_active=True, is_staff=True, is_member_of_staff=True)
-    return render(request, 'schoolapp/systempages/teachers.html', {
-        'teachers': teachers,
+def list_staff(request):
+    staff = User.objects.filter(is_active=True, is_staff=True, is_member_of_staff=True)
+    return render(request, 'schoolapp/systempages/staff.html', {
+        'staff': staff,
     })
 
 
 # add teacher
 @login_required()
-def add_teacher(request):
+def add_staff(request):
     if request.method == 'POST':
-        add_teacher_form = AddTeacherForm(request.POST, request.FILES)
+        add_staff_form = AddStaffForm(request.POST, request.FILES)
         print('INSIDE POST')
 
-        if add_teacher_form.is_valid():
+        if add_staff_form.is_valid():
             print('FORM VALID')
             letters = string.ascii_lowercase
             result_str = ''.join(random.choice(letters) for i in range(5))
 
-            form = add_teacher_form.save(commit=False)
-            print('USERNAME: ', add_teacher_form.cleaned_data.get('first_name'))
-            f_name = add_teacher_form.cleaned_data.get('first_name')
+            form = add_staff_form.save(commit=False)
+            print('USERNAME: ', add_staff_form.cleaned_data.get('first_name'))
+            f_name = add_staff_form.cleaned_data.get('first_name')
             # form.username = request.POST.get('first_name')
             form.username = f_name.lower()
             form.is_member_of_staff = True
@@ -726,7 +727,7 @@ def add_teacher(request):
             try:
                 form.save()
             except IntegrityError:
-                return redirect('list_teacher')
+                return redirect('list_staff')
 
             # notify agent via mail
             subject = 'User Account Creation'
@@ -741,7 +742,7 @@ def add_teacher(request):
             from_email = 'chrispinkay@gmail.com'
 
             try:
-                send_mail(subject, message, from_email, recipient_list=[add_teacher_form.cleaned_data.get('email'), ],
+                send_mail(subject, message, from_email, recipient_list=[add_staff_form.cleaned_data.get('email'), ],
                           fail_silently=False)
 
             except socket.gaierror:
@@ -751,19 +752,19 @@ def add_teacher(request):
                 print('CONNECTION ERROR')
                 return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
             except IntegrityError:
-                return redirect('list_teacher')
+                return redirect('list_staff')
 
-            teachers = User.objects.filter(is_member_of_staff=True)
-            return render(request, 'schoolapp/systempages/teachers.html', {
-                'add_teacher_form': add_teacher_form,
-                'success_message': 'Lecturer Added Successfully',
-                'teachers': teachers
+            staff = User.objects.filter(is_member_of_staff=True)
+            return render(request, 'schoolapp/systempages/staff.html', {
+                'add_staff_form': add_staff_form,
+                'success_message': 'Staff Added Successfully',
+                'staff': staff
             })
 
-    add_teacher_form = AddTeacherForm()
-    return render(request, 'schoolapp/systempages/add-teacher.html', {
-        'add_teacher_form': add_teacher_form,
-        'error_message': 'Lecturer Not Added'
+    add_staff_form = AddStaffForm()
+    return render(request, 'schoolapp/systempages/add-staff.html', {
+        'add_staff_form': add_staff_form,
+        'error_message': 'Staff Not Added'
     })
 
 
@@ -775,16 +776,64 @@ def list_students(request):
         'students': students,
     })
 
-
-# add teacher
 @login_required()
-def add_student(request):
+def search_applicant_by_student_no(request):
+    if request.method == 'POST':
+        try:
+            application_id = Admission.objects.get(student_number__full_student_no=request.POST.get('student_number'))
+            # redirect to the add student form
+            if application_id:
+                print('Student Found: %s' %application_id)
+            return redirect('add_student', application_id=application_id.id)
+        except Admission.DoesNotExist:
+            return render(request, 'schoolapp/systempages/search_applicant_by_student_no.html',
+                          {
+                              'error_message': 'Student number not found',
+                          })
+    else:
+        return render(request, 'schoolapp/systempages/search_applicant_by_student_no.html')
+
+
+# add student
+@login_required()
+def add_student(request, application_id):
+    # get application
+    application_details = Admission.objects.get(pk=application_id)
+    print('APPLICATION DETAILS: ', application_details)
+
+    # get all programs
+    programs_list = Program.objects.all()
+
     if request.method == 'POST':
         add_student_form = AddStudentForm(request.POST, request.FILES)
-        print('INSIDE POST')
+        print('INSIDE POST!')
+        
+        # check if user already exists
+        try:
+            user = User.objects.get(username=request.POST.get('first_name'))
+            print('USER ALREADY EXISTS!')
+            
+            # create a student details instance
+            add_student_form.user = user
+        except user.DoesNotExist:
+            print('USER DOES NOT EXIST!')
+            
+            # create or get a new user instance
+            user = User.objects.create_user(username=request.POST.get('first_name'), first_name=request.POST.get('first_name'), password=request.POST.get('first_name'), last_name=request.POST.get('last_name'), email=request.POST.get('email'))
+            
+            # create a student details instance
+            add_student_form.user = user
+            if user:
+                print('USER CREATED!')
+                user.save()
+        
+                # create student admission details
+                add_student_form.student_admission_details = application_details
+
+
 
         if add_student_form.is_valid():
-            print('FORM VALID')
+            print('FORM VALID!')
 
             # get form instance
             form = add_student_form.save(commit=False)
@@ -820,6 +869,8 @@ def add_student(request):
                 print('INTEGRITY ERROR: ', IntegrityError)
                 return render(request, 'schoolapp/systempages/add-student.html', {
                     'add_student_form': add_student_form,
+                    'application_details': application_details,
+                    'programs_list': programs_list,
                     'error_message': 'Provided student number: '+student_number_obj.full_student_no+' already taken',
                 })
 
@@ -829,8 +880,8 @@ def add_student(request):
                        'Your student account on Woodlands University College web portal for the program '+ str(program) +' was successfully created.\n\n' \
                        'Your Login credentials are below:\n\n' \
                        'USERNAME: ' + str(student_number_obj.full_student_no) + '\n' \
-                        'PASSWORD: ' + str(result_str) + '\n' \
-                        'Log into your account by Visiting the link below:\n\n' \
+                       'PASSWORD: ' + str(result_str) + '\n' \
+                       'Log into your account by Visiting the link below:\n\n' \
                       + request.get_host()
 
             from_email = 'chrispinkay@gmail.com'
@@ -858,11 +909,15 @@ def add_student(request):
             print('ERRORS: ', add_student_form.errors)
             return render(request, 'schoolapp/systempages/add-student.html', {
                 'add_student_form': add_student_form,
-                'error_message': 'Student Not Added: ' + add_student_form.errors,
+                'application_details': application_details,
+                'programs_list': programs_list,
+                'error_message': 'Student Not Added: ' + str(add_student_form.errors),
             })
     add_student_form = AddStudentForm()
     return render(request, 'schoolapp/systempages/add-student.html', {
         'add_student_form': add_student_form,
+        'application_details': application_details,
+        'programs_list': programs_list
     })
 
 
@@ -964,7 +1019,7 @@ def profile(request):
         current_semester = Semester.objects.get(is_current_semester=True)
     except Semester.DoesNotExist:
         return HttpResponse('Semester does not exist, contact support for help.')
-    if request.user.user_group is 'Lecturer':
+    if request.user.user_group == 'Lecturer':
         print("IF LECTURER::")
         courses = Course.objects.filter(allocated_course__lecturer__pk=request.user.id).filter(
             semester=current_semester)
@@ -1111,6 +1166,7 @@ def payment_collections_list(request):
                   })
 
 
+@login_required()
 def payment_collect(request):
     if request.method == 'POST':
         add_payment_form = PaymentCollectForm(request.POST, request.FILES)
@@ -1140,3 +1196,184 @@ def payment_collect(request):
         'add_payment_form': add_payment_form,
         'error_message': 'Payment Not Added'
     })
+
+
+@login_required()
+def admin_online_student_registration(request):
+    programs = Program.objects.all()
+    if request.method == 'POST':
+        application_form = AdminOnlineAdmissionForm(request.POST, request.FILES)
+        print('PROGRAM: ', request.POST.get('program_applied_for'))
+
+        if application_form.is_valid():
+            print('FORM IS VALID')
+            # get temp password
+            tmp_password = generateTempPassword(10)
+            application_form.temp_password = tmp_password
+            # print('PASSWORD: ', tmp_password)
+
+            # get program using id
+            program = Program.objects.get(id=request.POST.get('program_applied_for'))
+
+            # generate student number
+            student_no = generateStudentNumberRandomDigits()
+            sn_obj = StudentNumber.objects.create(full_student_no=student_no)
+            print('STUDENT NO: ', sn_obj.full_student_no)
+
+            obj = application_form.save(commit=False)
+            obj.program_applied_for = program
+            obj.student_number = sn_obj
+            obj.temp_password = tmp_password
+            obj.intake = Session.objects.get(is_current_session=True)
+            obj.save()
+
+            # notify applicant via mail
+            # get email content
+            firstname = application_form.cleaned_data.get('first_name')
+            subject = 'WUC Online Application'
+            message = 'Dear, ' + application_form.cleaned_data.get(
+                "first_name") + ' ' + application_form.cleaned_data.get("last_name") + '\n\n' \
+                'Your application for the program ' + str(
+                application_form.cleaned_data.get('program_applied_for')) + \
+                      ' has been successfully submitted, you will be notified once it has been reviewed by the school' \
+                      ' administration. You can check the status of your application via this link https://wucsmstest.pythonanywhere.com/application-status/ \n' \
+                      'You will be required to provide your Student Number and the temporal system generated password.\n\n' \
+                      'STUDENT NO.: ' + sn_obj.full_student_no + '\n' \
+                      'PASSWORD: ' + tmp_password + '\n' \
+                       'LINK: https://wucsmstest.pythonanywhere.com/application-status/\n\n' \
+                       'Keep the information above safe or you will be unable to see your application status.\n\n' \
+                       'You can go back and make changes to your application details before close of application,\n' \
+                       'For more information, contact the academic office on: 0900000000 or 0700000000'
+
+            from_email = 'chrispinkay@gmail.com'
+            try:
+                send_mail(subject, message, from_email, recipient_list=[application_form.cleaned_data.get('email'), ],
+                          fail_silently=False)
+
+            except socket.gaierror:
+                print('NO INTERNET ACCESS')
+                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            except ConnectionError:
+                print('CONNECTION ERROR')
+                return HttpResponse('Check Your Internet Connection And Try Again. Email not sent')
+            except SMTPAuthenticationError:
+                return HttpResponse('Host Email Username and Password not accepted, Email Not Sent!')
+
+            # add a success page to be rendered
+            messages.success(request, 'Application Successfully Submitted!')
+            context = {
+                'message': messages,
+                'form': application_form,
+                'programs': programs
+            }
+            return render(request, 'schoolapp/systempages/admin_student_registration_successful.html', context)
+            # return redirect('index')
+
+        else:
+            print('FORM IS NOT VALID', application_form.errors)
+            messages.error(request, application_form.errors)
+            context = {
+                'message': application_form.errors,
+                'form': application_form,
+                'programs': programs
+            }
+            return render(request, 'schoolapp/systempages/admin_online_student_registration_form.html', context)
+    else:
+        # Get list of departments
+        departments = Department.objects.all()
+
+        # Get list of schools
+        schools = School.objects.all()
+
+        # Get list of programs
+        programs = Program.objects.all()
+
+        application_form = OnlineAdmissionForm()
+        return render(request, "schoolapp/systempages/admin_online_student_registration_form.html",
+                      {
+                          'departments': departments,
+                          'schools': schools,
+                          'programs': programs,
+                          'form': application_form,
+                      })
+
+
+@login_required
+def add_score(request):
+    """
+    Shows a page where a lecturer will select a course allocated to him for score entry.
+    in a specific semester and session
+
+    """
+    current_session = Session.objects.get(is_current_session=True)
+    current_semester = get_object_or_404(Semester, is_current_semester=True, session=current_session)
+    courses = Course.objects.filter(semester=current_semester.semester)
+    context = {
+        "courses": courses,
+        "current_semester": current_semester,
+    }
+    return render(request, 'schoolapp/systempages/add_score.html', context)
+
+
+@login_required
+def add_score_for(request, id):
+    """
+    Shows a page where an examination officer will add score for students that are taking courses
+    in a specific semester and session
+    """
+    current_semester = Semester.objects.get(is_current_semester=True)
+    print("Current: ", current_semester)
+    if request.method == 'GET':
+        courses = Course.objects.filter(semester=current_semester.semester)
+        course = Course.objects.get(pk=id)
+        print('COURSE: ', course.course_name)
+        students = TakenCourse.objects.filter(course__allocated_course__lecturer__pk=request.user.id).filter(
+            course__id=id).filter(course__semester=current_semester.semester)
+        context = {
+            "current_semester": current_semester,
+            "courses": courses,
+            "course": course,
+            "students": students,
+        }
+        return render(request, 'schoolapp/systempages/add-score-for.html', context)
+
+    if request.method == 'POST':
+        ids = ()
+        data = request.POST.copy()
+        data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
+        for key in data.keys():
+            ids = ids + (str(key),)  # gather all the all students id (i.e the keys) in a tuple
+        for s in range(0, len(ids)):  # iterate over the list of student ids gathered above
+            student = TakenCourse.objects.get(id=ids[s])
+            courses = Course.objects.filter(level=student.student.level).filter(
+                semester=current_semester.semester)  # all courses of a specific level in current semester
+            total_unit_in_semester = 0
+            for i in courses:
+                if i == courses.count():
+                    break
+                else:
+                    total_unit_in_semester += int(i.courseUnit)
+            score = data.getlist(ids[s])  # get list of score for current student in the loop
+            ca = score[0]  # subscript the list to get the fisrt value > ca score
+            exam = score[1]  # do thesame for exam score
+            obj = TakenCourse.objects.get(pk=ids[s])  # get the current student data
+            obj.ca = ca  # set current student ca score
+            obj.exam = exam  # set current student exam score
+            obj.total = obj.get_total(ca=ca, exam=exam)
+            obj.grade = obj.get_grade(ca=ca, exam=exam)
+            obj.comment = obj.get_comment(obj.grade)
+            #obj.carry_over(obj.grade)
+            #obj.is_repeating()
+            obj.save()
+            # gpa = obj.calculate_gpa(total_unit_in_semester)
+            # cgpa = obj.calculate_cgpa()
+            # try:
+            #     a = Result.objects.get(student=student.student, semester=current_semester, level=student.student.level)
+            #     a.gpa = gpa
+            #     a.cgpa = cgpa
+            #     a.save()
+            # except:
+            #     Result.objects.get_or_create(student=student.student, gpa=gpa, semester=current_semester, level=student.student.level)
+        messages.success(request, 'Successfully Recorded! ')
+        return HttpResponseRedirect(reverse_lazy('add_score_for', kwargs={'id': id}))
+    return HttpResponseRedirect(reverse_lazy('add_score_for', kwargs={'id': id}))

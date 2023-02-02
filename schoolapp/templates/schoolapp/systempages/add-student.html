@@ -13,7 +13,8 @@
                         <div class="col">
                             <h3 class="page-title">Add Student</h3>
                             <ul class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{% url 'list_students' %}">Student</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'admin_admissions_list' %}">Applications</a></li>
+                                <li class="breadcrumb-item active"><a href="{% url 'search_applicant_by_student_no' %}">Search Application</a></li>
                                 <li class="breadcrumb-item active">Add Student</li>
                             </ul>
                         </div>
@@ -28,45 +29,53 @@
                             {% endif %}
                         <br>
                             <div class="card-body">
-                                <form action="{% url 'add_student' %}" method="post">
+                                <form action="{% url 'add_student' application_details.id %}" method="post">
                                     {% csrf_token %}
                                     <div class="row">
                                         <div class="col-12">
-                                            <h5 class="form-title"><span>Basic Details</span></h5>
+                                            <h5 class="form-title">
+                                                <span>
+                                                    Basic Details for:
+                                                    <a class="" title="click to view all details" href="{% url 'admin_admissions_detail' application_details.id %}">
+                                                        {{ application_details.student_number }}
+                                                    </a>
+                                                </span>
+                                            </h5>
                                         </div>
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.first_name.label_tag }}</label>
-                                                    {{ add_student_form.first_name }}
-                                                    {{ add_student_form.first_name.error_messages }}
+                                                     <label for="first_name">First Name</label>
+                                                    <input type="text" value="{{ application_details.first_name }}" placeholder="enter first name here" class="form-control" id="first_name" name="first_name">
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.last_name.label_tag }}</label>
-                                                    {{ add_student_form.last_name }}
-                                                    {{ add_student_form.last_name.error_messages }}
+                                                        <label for="last_name">Last Name</label>
+                                                        <input type="text" value="{{ application_details.last_name }}" placeholder="enter last name here" class="form-control" id="last_name" name="last_name">
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.gender.label_tag }}</label>
-                                                    {{ add_student_form.gender }}
-                                                    {{ add_student_form.gender.error_messages }}
+                                                    <label for="gender">Gender</label>
+                                                    <select class="form-control" id="gender" name="gender">
+                                                        <option title="chosen during admission" selected value="{{ application_details.gender }}">{{ application_details.gender }}</option>
+                                                        <option disabled>-----------------------------</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.email.label_tag }}</label>
-                                                    {{ add_student_form.email }}
-                                                    {{ add_student_form.email.error_messages }}
+                                                    <label for="email">Email Address</label>
+                                                    <input type="email" value="{{ application_details.email }}" placeholder="enter email here" class="form-control" id="email" name="email">
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.phone.label_tag }}</label>
-                                                    {{ add_student_form.phone }}
-                                                    {{ add_student_form.phone.error_messages }}
+                                                    <label for="phone_number">Phone Number</label>
+                                                    <input type="text" value="{{ application_details.phone_number }}" placeholder="enter phone number here" class="form-control" id="phone_number" name="phone_number">
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
@@ -79,24 +88,29 @@
 
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>{{ add_student_form.program.label_tag }}</label>
-                                                    {{ add_student_form.program }}
-                                                    {{ add_student_form.program.error_messages }}
+                                                    <label for="program_applied_for">Program Of Choice:</label>
+                                                    <select class="form-control" id="program_applied_for" name="program_applied_for">
+                                                        <option title="chosen during admission" selected value="{{ application_details.program_applied_for }}">{{ application_details.program_applied_for }}</option>
+                                                        <option disabled>-----------------------------</option>
+                                                        {% for p in programs_list %}
+                                                            <option value="p">{{ p }}</option>
+                                                        {% endfor %}
+                                                    </select>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
                                                     <label for="student_number">Student Number:</label>
-                                                    <input type="text" placeholder="enter student number here" class="form-control" id="student_number" name="student_number">
+                                                    <input type="text" value="{{ application_details.student_number }}" placeholder="enter student number here" class="form-control" id="student_number" name="student_number">
                                                     {% if error_message %}
                                                         <i style="color: red">{{ error_message }}</i>
                                                     {% endif %}
                                                 </div>
                                             </div>
 
-                                            <div class="col-12">
-                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="col-12 text-center">
+                                                <button type="submit" class="btn btn-primary">Add Student</button>
                                             </div>
                                     </div>
                                 </form>

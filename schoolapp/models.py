@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 import decimal
+from django.template.defaultfilters import default
 
 
 # Create your models here.
@@ -300,6 +301,7 @@ USER_GROUPS = (
     ('Program Coordinator or Principal Lecturer Office', 'Program Coordinator or Principal Lecturer Office'),
     ('Registrar Office', 'Registrar Office'),
     ('Lecturer', 'Lecturer'),
+    ('Examinations Office', 'Examinations Office'),
     ('Other Staff', "Other Staff"),
 )
 
@@ -421,13 +423,13 @@ class Session(models.Model):
     next_session_begins = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return 'Session: ' + self.session
+        return 'Academic Session: ' + self.session
 
 
 class Semester(models.Model):
     semester = models.CharField(max_length=200, choices=SEMESTER, blank=True)
     is_current_semester = models.BooleanField(default=False, blank=True, null=True)
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, blank=True, null=True)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, null=True)
     next_semester_begins = models.DateField(null=True, blank=True)
 
     def __str__(self):
@@ -448,11 +450,11 @@ class Level(models.Model):
 class Course(models.Model):
     course_name = models.CharField('Course Name', max_length=200)
     course_code = models.CharField('Course Code', max_length=200)
-    course_program = models.ForeignKey(Program, verbose_name='Program', help_text='Program to which the course belongs',
-                                       on_delete=models.CASCADE)
+    course_program = models.ForeignKey(Program, verbose_name='Program', null=True, help_text='Program to which the course belongs',
+                                       on_delete=models.SET_NULL)
     course_description = models.TextField('Course Description', null=True, blank=True)
-    semester = models.CharField(max_length=200, choices=SEMESTER, blank=True)
-    level = models.ForeignKey(Level, verbose_name='Year', default='', on_delete=models.CASCADE)
+    semester = models.CharField('Semester', max_length=200, null=True, choices=SEMESTER)
+    level = models.ForeignKey(Level, verbose_name='Year', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.course_name
@@ -475,15 +477,13 @@ class SchoolClass(models.Model):
 
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    program = models.ForeignKey(Program, verbose_name='Program', default='', on_delete=models.CASCADE)
-    student_number = models.ForeignKey('StudentNumber', max_length=200, default='', verbose_name='Student Number',
-                                       on_delete=models.CASCADE)
-    admission_date = models.DateField(auto_now_add=True, null=True, blank=True)
+    user = models.OneToOneField(User, help_text='search by student number', on_delete=models.CASCADE)
+    student_admission_details = models.ForeignKey('Admission', help_text='search by student number', null=True, blank=True, on_delete=models.SET_NULL)
     level = models.ForeignKey(Level, verbose_name='Current Year Of Study', default='', on_delete=models.CASCADE)
+    student_registration_date = models.DateField('Registration Date', auto_now_add=True,)
 
     def __str__(self):
-        return f'{self.student_number.full_student_no} - {self.user.get_full_name()} - {str(self.level)}'
+        return f'{self.student_admission_details.student_number.full_student_no} - {self.user.get_full_name()} - {str(self.level)}'
 
     # def save(self, **kwargs):
     #     if not self.id:
@@ -503,6 +503,11 @@ class StudentNumber(models.Model):
     def __str__(self):
         return self.full_student_no
 
+import datetime
+def default_date_of_birth():
+    return datetime.datetime(2005,1,1)
+
+
 
 class Admission(models.Model):
     # Persanal particulars
@@ -515,7 +520,7 @@ class Admission(models.Model):
     phone_number = models.CharField(max_length=13, default='', verbose_name='Phone Number', )
     email = models.EmailField(max_length=200, verbose_name='Email Address', help_text='Required for communication')
     gender = models.CharField(max_length=200, default='Male', choices=GENDER, verbose_name='Gender')
-    date_of_birth = models.DateField(max_length=200, null=True, blank=True, verbose_name='DOB', )
+    date_of_birth = models.DateField(max_length=200, default=default_date_of_birth(), verbose_name='DOB', )
     nationality = models.CharField(max_length=200, choices=COUNTRIES, default='Zambia', verbose_name='Nationality', )
     # nationality = CountryField('Nationality', null=True, blank=True)
     marital_status = models.CharField(max_length=200, default='Single', choices=MARITAL_STATUS,
@@ -628,8 +633,9 @@ class Admission(models.Model):
 
     temp_password = models.CharField('Temp Password', max_length=200, null=True, blank=True)
     balance_due = models.CharField('Balance Due', max_length=200, null=True, blank=True)
-    intake = models.ForeignKey(Session, verbose_name='Intake', null=True, blank=True, max_length=200, on_delete=models.DO_NOTHING)
+    intake = models.ForeignKey(Session, verbose_name='In-take', null=True, blank=True, max_length=200, on_delete=models.DO_NOTHING)
 
+    admission_date = models.DateTimeField('Admission Date', auto_now_add=True,)
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
@@ -754,6 +760,7 @@ class TakenCourse(models.Model):
     semester = models.ForeignKey(Semester, null=True, blank=True, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='taken_courses')
     ca = models.PositiveIntegerField(blank=True, null=True, default=0)
+    ca2 = models.PositiveIntegerField(blank=True, null=True, default=0)
     exam = models.PositiveIntegerField(blank=True, null=True, default=0)
     total = models.PositiveIntegerField(blank=True, null=True, default=0)
     grade = models.CharField(choices=GRADE, max_length=1, blank=True)
@@ -762,11 +769,11 @@ class TakenCourse(models.Model):
     def get_absolute_url(self):
         return reverse('update_score', kwargs={'pk': self.pk})
 
-    def get_total(self, ca, exam):
-        return int(ca) + int(exam)
+    def get_total(self, ca, ca2, exam):
+        return int(ca) + int(ca2) + int(exam)
 
-    def get_grade(self, ca, exam):
-        total = int(ca) + int(exam)
+    def get_grade(self, ca, ca2, exam):
+        total = int(ca) + int(ca2) + int(exam)
         if total >= 70:
             grade = A
         elif total >= 60:
