@@ -196,7 +196,7 @@
                                     class="menu-arrow"></span></a>
                             <ul>
                                 <li><a href="{% url 'list_students' %}">List Students</a></li>
-                                <li><a href="{% url 'search_applicant_by_student_no' %}">Add Student</a></li>
+                                <!-- <li><a href="{% url 'search_applicant_by_student_no' %}">Add Student</a></li> -->
                                 <li><a href="{% url 'admin_student_registration' %}">Register Student</a></li>
                                 {% if request.user.user_group == 'Examinations Office' %}
                                     <li><a href="{% url 'add_score' %}">Manage Score</a></li>
