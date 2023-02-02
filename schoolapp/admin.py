@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
 from schoolapp.models import Semester, Course, Session, Level, User, School, Program, Department, ProgramType, Student, \
-    Admission, StudentNumber, SystemSettings, Payment, PaymentType, PaymentStructure
+    Admission, StudentNumber, SystemSettings, Payment, PaymentType, PaymentStructure, TakenCourse, Result
 
 
 # Register your models here.
@@ -15,7 +15,7 @@ class TheUserAdmin(UserAdmin):
     list_display = ('id', 'first_name', 'last_name', 'phone', 'email', 'is_student', 'is_member_of_staff', 'user_group')
     list_display_links = ('first_name', 'last_name', 'phone', 'email', 'is_student', 'is_member_of_staff', 'user_group')
     list_per_page = 10
-    search_fields = ('first_name', 'last_name', 'phone', 'address', 'email', 'user_group')
+    search_fields = ('first_name', 'last_name', 'phone', 'email', 'user_group')
     fieldsets = (
         *UserAdmin.fieldsets,  # original form fieldsets, expanded
         (  # new fieldset added on to the bottom
@@ -57,9 +57,11 @@ class SchoolAdmin(ImportExportModelAdmin):
 
 
 class ProgramAdmin(ImportExportModelAdmin):
+    list_display = ('program_name', 'program_code', 'program_duration', 'program_type', 'program_coordinator', 'program_school', 'program_description')
     list_per_page = 10
-    list_display = ('program_name', 'program_description')
-    search_fields = ('program_name', 'program_description')
+    search_fields = ('program_name', 'program_code', 'program_duration', 'program_description')
+    autocomplete_fields = ('program_type', 'program_coordinator', 'program_school')
+    list_filter = ('program_type', 'program_duration', 'program_school')
 
 
 class DepartmentAdmin(ImportExportModelAdmin):
@@ -97,11 +99,12 @@ class SystemSettingsAdmin(ImportExportModelAdmin):
 
 
 class StudentAdmin(ImportExportModelAdmin):
-    list_display = ('id', 'user', 'student_number', 'program', 'admission_date', 'level')
-    list_display_links = ('id', 'user', 'student_number', 'program', 'admission_date', 'level')
+    list_display = ('id', 'user', 'student_admission_details', 'level')
+    list_display_links = ('id', 'user', 'student_admission_details', 'level')
     list_per_page = 10
-    search_fields = ('user', 'student_number', 'program', 'admission_date', 'level')
-    autocomplete_fields = ('user', 'program')
+    search_fields = ('user', 'student_admission_details__student_number', 'level')
+    autocomplete_fields = ('user', 'student_admission_details', )
+    date_hierarchy = 'student_registration_date'
 
 
 class AdmissionAdmin(ImportExportModelAdmin):
@@ -135,6 +138,21 @@ class PaymentAdmin(ImportExportModelAdmin):
     list_filter = ('semester', )
 
 
+class TakenCourseAdmin(ImportExportModelAdmin):
+    list_display = ('student', 'semester', 'course', 'ca', 'ca2', 'exam', 'total', 'grade', 'comment')
+    list_display_links = ('student', 'semester', 'course', 'ca', 'ca2', 'exam', 'total', 'grade', 'comment')
+    list_per_page = 10
+    search_fields = ('student__full_student_no', 'semester', 'course', 'ca', 'ca2', 'exam', 'total', 'grade', 'comment')
+    list_filter = ('semester',)
+
+
+class ResultAdmin(ImportExportModelAdmin):
+    list_display = ('student', 'course', 'gpa', 'cgpa', 'semester', 'session', 'level')
+    list_display_links = ('student', 'course', 'gpa', 'cgpa', 'semester', 'session', 'level')
+    list_per_page = 10
+    search_fields = ('student__full_student_no', 'semester', 'course', 'gpa', 'cgpa',)
+    list_filter = ('semester', 'level')
+
 
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Semester, SemesterAdmin)
@@ -152,3 +170,5 @@ admin.site.register(SystemSettings, SystemSettingsAdmin)
 admin.site.register(PaymentType, PaymentTypeAdmin)
 admin.site.register(PaymentStructure, PaymentStructureAdmin)
 admin.site.register(Payment, PaymentAdmin)
+admin.site.register(TakenCourse, TakenCourseAdmin)
+admin.site.register(Result, ResultAdmin)
